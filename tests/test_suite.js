@@ -14,6 +14,7 @@ if (isNode) {
   global.DashboardView = require('../js/views/dashboardView.js');
   global.FleetView = require('../js/views/fleetView.js');
   global.BookingsView = require('../js/views/bookingsView.js');
+  global.CrmView = require('../js/views/crmView.js');
 } else {
   assert = (cond, msg) => {
     if (!cond) throw new Error(msg || 'Assertion failed');
@@ -230,6 +231,22 @@ async function testBookingWorkflowAndInspection() {
   assert(insp[0].fuel_level === 100, "Fuel level should match");
 }
 
+async function testCrmBlacklist() {
+  if (typeof CrmView === 'undefined') {
+    throw new Error("CrmView is not defined");
+  }
+  const user = DB.query("SELECT id, status FROM users WHERE role = 'client' LIMIT 1")[0];
+  const oldStatus = user.status;
+  const newStatus = CrmView.toggleBlacklist(user.id);
+  assert(newStatus === (oldStatus === 'active' ? 'blacklisted' : 'active'), "Status must be toggled");
+
+  const check = DB.query("SELECT status FROM users WHERE id = ?", [user.id])[0];
+  assert(check.status === newStatus, "DB status should match toggled status");
+
+  // Revert
+  CrmView.toggleBlacklist(user.id);
+}
+
 async function runAll() {
   console.log("=== RentCar Test Suite ===");
   await runTest("testDbInitialization", testDbInitialization);
@@ -241,6 +258,7 @@ async function runAll() {
   await runTest("testDashboardMetrics", testDashboardMetrics);
   await runTest("testFleetCrud", testFleetCrud);
   await runTest("testBookingWorkflowAndInspection", testBookingWorkflowAndInspection);
+  await runTest("testCrmBlacklist", testCrmBlacklist);
   
   const passed = testResults.filter(r => r.status === 'PASS').length;
   const total = testResults.length;
