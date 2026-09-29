@@ -15,6 +15,7 @@ if (isNode) {
   global.FleetView = require('../js/views/fleetView.js');
   global.BookingsView = require('../js/views/bookingsView.js');
   global.CrmView = require('../js/views/crmView.js');
+  global.ReportsView = require('../js/views/reportsView.js');
 } else {
   assert = (cond, msg) => {
     if (!cond) throw new Error(msg || 'Assertion failed');
@@ -247,6 +248,25 @@ async function testCrmBlacklist() {
   CrmView.toggleBlacklist(user.id);
 }
 
+async function testFinancialSummaryAndExport() {
+  if (typeof ReportsView === 'undefined') {
+    throw new Error("ReportsView is not defined");
+  }
+  const summary = ReportsView.getFinancialSummary();
+  assert(typeof summary.totalIncome === 'number', "Total income should be number");
+  assert(typeof summary.totalExpense === 'number', "Total expense should be number");
+  assert(summary.netProfit === summary.totalIncome - summary.totalExpense, "Net profit should equal income - expense");
+
+  const csv = ReportsView.exportToCsv();
+  assert(csv.includes("ID,Turi,Kategoriya,Summa"), "CSV should contain proper headers");
+
+  const binary = DB.exportDatabase();
+  assert(binary instanceof Uint8Array, "Exported DB must be Uint8Array");
+  assert(binary.length > 0, "Exported DB must not be empty");
+  const headerStr = String.fromCharCode(...binary.slice(0, 15));
+  assert(headerStr === "SQLite format 3", "Must be a valid SQLite 3 database");
+}
+
 async function runAll() {
   console.log("=== RentCar Test Suite ===");
   await runTest("testDbInitialization", testDbInitialization);
@@ -259,6 +279,7 @@ async function runAll() {
   await runTest("testFleetCrud", testFleetCrud);
   await runTest("testBookingWorkflowAndInspection", testBookingWorkflowAndInspection);
   await runTest("testCrmBlacklist", testCrmBlacklist);
+  await runTest("testFinancialSummaryAndExport", testFinancialSummaryAndExport);
   
   const passed = testResults.filter(r => r.status === 'PASS').length;
   const total = testResults.length;
