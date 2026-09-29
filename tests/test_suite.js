@@ -9,6 +9,7 @@ if (isNode) {
   path = require('path');
   assert = require('assert');
   global.DB = require('../js/db.js');
+  global.Auth = require('../js/auth.js');
 } else {
   assert = (cond, msg) => {
     if (!cond) throw new Error(msg || 'Assertion failed');
@@ -58,10 +59,26 @@ async function testCssTokens() {
   }
 }
 
+async function testAuthRoleSwitch() {
+  if (typeof Auth === 'undefined') {
+    throw new Error("Auth is not defined");
+  }
+  Auth.switchRole('admin');
+  assert(Auth.getRole() === 'admin', "Current role should be admin");
+  Auth.switchRole('client');
+  assert(Auth.getRole() === 'client', "Current role should be client");
+  
+  // Test blacklisted check
+  // User 5 Dilshod Raxmatov is blacklisted
+  assert(Auth.isBlacklisted(5) === true, "User 5 must be recognized as blacklisted");
+  assert(Auth.isBlacklisted(1) === false, "User 1 must not be blacklisted");
+}
+
 async function runAll() {
   console.log("=== RentCar Test Suite ===");
   await runTest("testDbInitialization", testDbInitialization);
   await runTest("testCssTokens", testCssTokens);
+  await runTest("testAuthRoleSwitch", testAuthRoleSwitch);
   
   const passed = testResults.filter(r => r.status === 'PASS').length;
   const total = testResults.length;
