@@ -10,6 +10,7 @@ if (isNode) {
   assert = require('assert');
   global.DB = require('../js/db.js');
   global.Auth = require('../js/auth.js');
+  global.ClientView = require('../js/views/clientView.js');
 } else {
   assert = (cond, msg) => {
     if (!cond) throw new Error(msg || 'Assertion failed');
@@ -74,11 +75,94 @@ async function testAuthRoleSwitch() {
   assert(Auth.isBlacklisted(1) === false, "User 1 must not be blacklisted");
 }
 
+async function testCarFiltering() {
+  if (typeof ClientView === 'undefined') {
+    throw new Error("ClientView is not defined");
+  }
+  const suvCars = ClientView.filterCars({ category: 'SUV' });
+  assert(suvCars.length > 0, "Should find at least 1 SUV");
+  assert(suvCars.every(c => c.category === 'SUV'), "Filter should only return SUV cars");
+
+  const autoCars = ClientView.filterCars({ transmission: 'Avtomat' });
+  assert(autoCars.length > 0, "Should find automatic cars");
+  assert(autoCars.every(c => c.transmission === 'Avtomat'), "Filter should only return automatic cars");
+
+  const evCars = ClientView.filterCars({ fuel_type: 'Elektr' });
+  assert(evCars.length > 0, "Should find electric cars");
+  assert(evCars[0].category === 'Elektromobil', "BYD Song Plus should match");
+}
+
+async function testBookingConflictPrevention() {
+  if (typeof ClientView === 'undefined') {
+    throw new Error("ClientView is not defined");
+  }
+  // Calculate total: 350000/day * 3 days = 1050000 + KASKO (80000*3=240000) = 1290000
+  const calc = ClientView.calculateTotal(350000, 3, ['kasko']);
+  assert(calc.days === 3, "Days should be 3");
+  assert(calc.totalAmount === 1290000, `Total amount should be 1290000, got ${calc.totalAmount}`);
+
+  // Create a booking
+  const res1 = ClientView.submitBooking({
+    car_id: 2,
+    user_name: 'Test Client',
+    phone: '+998901112233',
+    passport_no: 'AB1112233',
+    license_no: 'CD2223344',
+    pickup_location: 'Toshkent Xalqaro Aeroporti',
+    return_location: 'Toshkent Xalqaro Aeroporti',
+    start_date: '2026-11-01',
+    end_date: '2026-11-05',
+    services: ['gps'],
+    payment_method: 'click'
+  });
+  assert(res1.success === true, "Booking 1 should succeed: " + res1.error);
+  assert(res1.bookingCode && res1.bookingCode.startsWith('RC-'), "Booking code should start with RC-");
+
+  // Overlapping booking for same car should fail
+  const res2 = ClientView.submitBooking({
+    car_id: 2,
+    user_name: 'Another Client',
+    phone: '+998909998877',
+    start_date: '2026-11-03',
+    end_date: '2026-11-07',
+    payment_method: 'payme'
+  });
+  assert(res2.success === false, "Overlapping booking must fail");
+  assert(res2.error.includes("band"), "Error should mention car is booked");
+
+  // Booking by blacklisted customer should fail
+  const resBlacklist = ClientView.submitBooking({
+    car_id: 1,
+    phone: '+998971112233', // User 5 is blacklisted
+    start_date: '2026-12-01',
+    end_date: '2026-12-03',
+    payment_method: 'cash'
+  });
+  assert(resBlacklist.success === false, "Blacklisted customer booking must be rejected");
+}
+
+async function testBookingCancellation() {
+  if (typeof ClientView === 'undefined') {
+    throw new Error("ClientView is not defined");
+  }
+  const bookings = DB.query("SELECT id FROM bookings WHERE status = 'new' LIMIT 1");
+  if (bookings.length > 0) {
+    const bId = bookings[0].id;
+    const ok = ClientView.cancelBooking(bId);
+    assert(ok === true, "Cancellation should succeed");
+    const check = DB.query("SELECT status FROM bookings WHERE id = ?", [bId]);
+    assert(check[0].status === 'cancelled', "Status must be cancelled");
+  }
+}
+
 async function runAll() {
   console.log("=== RentCar Test Suite ===");
   await runTest("testDbInitialization", testDbInitialization);
   await runTest("testCssTokens", testCssTokens);
   await runTest("testAuthRoleSwitch", testAuthRoleSwitch);
+  await runTest("testCarFiltering", testCarFiltering);
+  await runTest("testBookingConflictPrevention", testBookingConflictPrevention);
+  await runTest("testBookingCancellation", testBookingCancellation);
   
   const passed = testResults.filter(r => r.status === 'PASS').length;
   const total = testResults.length;
