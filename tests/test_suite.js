@@ -16,6 +16,7 @@ if (isNode) {
   global.BookingsView = require('../js/views/bookingsView.js');
   global.CrmView = require('../js/views/crmView.js');
   global.ReportsView = require('../js/views/reportsView.js');
+  global.App = require('../js/app.js');
 } else {
   assert = (cond, msg) => {
     if (!cond) throw new Error(msg || 'Assertion failed');
@@ -267,6 +268,15 @@ async function testFinancialSummaryAndExport() {
   assert(headerStr === "SQLite format 3", "Must be a valid SQLite 3 database");
 }
 
+async function testAppRouter() {
+  if (typeof App === 'undefined') {
+    throw new Error("App is not defined");
+  }
+  assert(typeof App.navigate === 'function', "App.navigate must be a function");
+  assert(typeof App.showToast === 'function', "App.showToast must be a function");
+  assert(typeof App.init === 'function', "App.init must be a function");
+}
+
 async function runAll() {
   console.log("=== RentCar Test Suite ===");
   await runTest("testDbInitialization", testDbInitialization);
@@ -280,6 +290,7 @@ async function runAll() {
   await runTest("testBookingWorkflowAndInspection", testBookingWorkflowAndInspection);
   await runTest("testCrmBlacklist", testCrmBlacklist);
   await runTest("testFinancialSummaryAndExport", testFinancialSummaryAndExport);
+  await runTest("testAppRouter", testAppRouter);
   
   const passed = testResults.filter(r => r.status === 'PASS').length;
   const total = testResults.length;
