@@ -1,0 +1,157 @@
+**RentCar** (avtomobillarni ijaraga berish) tizimi uchun to'liq va professional **Texnik Topshiriq (TZ / Technical Specification)** loyihasi. Ushbu hujjat dasturchilar va loyiha jamoasi uchun yo'riqnoma bo'lib xizmat qiladi.
+
+---
+
+# TEXNIK TOPSHIRIQ (TZ)
+
+**Loyiha nomi:** RentCar – Avtomobillarni ijaraga berish va boshqarish platformasi
+
+---
+
+## 1. LOYIHA HAQIDA UMUMIY MA'LUMOT
+
+### 1.1. Maqsadi
+
+Mijozlarga avtomobillarni onlayn band qilish (booking) va ijaraga olish imkoniyatini beruvchi hamda kompaniya ma'murlariga (administrator/menejer) avtopark, buyurtmalar va mijozlarni samarali boshqarish uchun avtomatlashtirilgan platforma yaratish.
+
+### 1.2. Loyiha tarkibiy qismlari
+
+1. **Web-sayt (Mijozlar uchun):** Avtomobillarni qidirish, ko'rish, band qilish va to'lov qilish.
+2. **Admin Panel (Menejer va Boshliq uchun):** Avtopark, buyurtmalar, mijozlar va moliya nazorati.
+3. **Mobile App (Ixtiyoriy/2-bosqich):** iOS va Android uchun mijoz ilovasi.
+
+---
+
+## 2. FOYDALANUVCHILAR ROLLARI VA RUXSATLAR (RBAC)
+
+* **Mijoz (User/Client):**
+* Ro'yxatdan o'tish (telefon/SMS, Telegram yoki Google).
+* Profil va haydovchilik guvohnomasini (prava) tasdiqdan o'tkazish.
+* Avtomobil qidirish, bron qilish va to'lovni amalga oshirish.
+* Buyurtmalar tarixini ko'rish.
+
+
+* **Menejer (Operator):**
+* Kelib tushgan buyurtmalarni tasdiqlash/rad etish.
+* Avtomobilni topshirish va qabul qilib olish (hujjatlashtirish va rasmlarni yuklash).
+* Mijozlar hujjatlarini verifikatsiya qilish.
+
+
+* **Administrator / Boshliq:**
+* Tizimning barcha funksiyalariga to'liq kirish.
+* Yangi avtomobillar qo'shish va narxlarni boshqarish.
+* Xodimlarga rollar biriktirish.
+* Analitika va moliyaviy hisobotlarni ko'rish.
+
+
+
+---
+
+## 3. LOYIHA SHARTLARI VA FUNKSIONAL TALABLAR
+
+### 3.1. Mijozlar paneli (Web / Mobile)
+
+1. **Bosh sahifa va Qidiruv:**
+* Olish va topshirish joyi (shahar, filial yoki aeroport).
+* Ijara sanasi va vaqti (Boshlanish va Tugash).
+* Avtomobil turi bo'yicha filtr (Ekonom, Biznes, SUV, Premium, Elektromobil).
+* Uzatmalar qutisi (Avtomat / Mexanika), yoqilg'i turi, o'rinlar soni bo'yicha filtrlar.
+
+
+2. **Avtomobil kartochkasi va Tafsilotlar:**
+* Avtomobil fotogalereyasi (360° yoki rasmlar).
+* Xususiyatlar (Dvigatel hajmi, yil, konditsioner, GPS va h.k.).
+* Sutkalik ijara narxi va garov (depozit) miqdori.
+* Qo'shimcha xizmatlar (Bolalar o'rindig'i, GPS navigator, Qo'shimcha haydovchi, Sug'urta paketlari).
+
+
+3. **Bron qilish va To'lov:**
+* Ijara kunlarini avtomatik hisoblash (dinamik narx).
+* Onlayn to'lov tizimlari (Click, Payme, Uzum, Visa/Mastercard).
+* Naqd pul yoki terminal orqali joyida to'lash varianti.
+* SMS / Telegram orqali tasdiqlash bildirishnomasi.
+
+
+4. **Shaxsiy kabinet:**
+* Foydalanuvchi ma'lumotlari va hujjatlari (Pasport/ID-karta va Prava fayllari).
+* Aktiv va yakunlangan buyurtmalar.
+* Bronni bekor qilish yoki uzaytirish so'rovi.
+
+
+
+### 3.2. Admin Panel (Boshqaruv tizimi)
+
+1. **Dashboard (Boshqaruv paneli):**
+* Band va bo'sh avtomobillar soni (real vaqt rejimida).
+* Bugungi topshirilishi va qabul qilinishi kerak bo'lgan mashinalar ro'yxati.
+* Kunlik / haftalik / oylik daromad statistikasi.
+
+
+2. **Avtoparkni boshqarish (Fleet Management):**
+* Avtomobil qo'shish/tahrirlash/o'chirish.
+* Mashina holati: *Bo'sh, Band, Ta'mirda (TO), Yuvishda, Arxivda*.
+* Texnik xizmat ko'rsatish (TO) va sug'urta (ATOS/KASKO) muddatlari haqida ogohlantirish.
+* Kilometraj (probeg) va yoqilg'i darajasini nazorat qilish.
+
+
+3. **Buyurtmalarni boshqarish:**
+* Buyurtmalar ro'yxati va kanban-doska (Yangi -> Tasdiqlangan -> Mashina berildi -> Yakunlandi -> Bekor qilindi).
+* Mashinani topshirish va qabul qilish akti (mashinaning mavjud tirnalgan/zararlangan joylarini rasmga olib tizimga biriktirish).
+
+
+4. **Mijozlar bazasi (CRM):**
+* Mijozlar ro'yxati, ularning ijara tarixi.
+* Qora ro'yxat (Blacklist) – jarimasi bor, mashinani urgan yoki to'lov qilmagan mijozlar uchun.
+
+
+5. **Moliya va Hisobotlar:**
+* Tushumlar va xarajatlar accountingi (yoqilg'i, ta'mirlash, yuvish).
+* Excel/PDF formatida hisobotlarni yuklab olish.
+
+
+
+---
+
+## 4. NODAVLAT / TEXNIK TALABLAR (NON-FUNCTIONAL REQUIREMENTS)
+
+### 4.1. Xavfsizlik va Ma'lumotlar muhofazasi
+
+* HTTPS / SSL xavfsizlik protokoli.
+* Parollarni bcrypt / argon2 bilan xeshlashtirish.
+* JWT (JSON Web Tokens) orqali avtorizatsiya va seanslarni boshqarish.
+* Mijozlarning shaxsiy hujjatlari (pasport/prava) shifrlangan xotirada saqlanishi kerak.
+
+### 4.2. Unumdorlik va Tizim yuklamasi
+
+* Sahifalar yuklanish vaqti: **< 2 soniya**.
+* Bir vaqtning o'zida kamida **500-1000 nafar faol foydalanuvchiga** javob bera olishi.
+* Rest API arxitekturasi va keshlar (Redis) bilan ishlash.
+
+### 4.3. UI/UX Talablar
+
+* To'liq **Responsive / Adaptive** dizayn (Mobil, Planshet va Desktop ekranlarga moslashuvchan).
+* Ko'p tillilik qo'llab-quvvatlovi (O'zbek, Rus, Ingliz).
+* Tizimning sodda va intuitiv interfeysi (3 marta bosishda bron qilish).
+
+---
+
+## 5. TAVSIYA ETILADIGAN TEXNOLOGIK STEK (TECH STACK)
+
+* **Frontend (Web):** React.js / Next.js yoki Vue.js / Nuxt.js, TailwindCSS.
+* **Backend:** Node.js (Express/NestJS) yoki Python (Django/FastAPI) yoki Go.
+* **Database:** PostgreSQL (asosiy ma'lumotlar uchun), Redis (keshlash va seanslar uchun).
+* **Integratsiyalar:**
+* **SMS Gateway:** Eskiz.uz yoki PlayMobile (SMS tasdiqlash uchun).
+* **Payment Gateways:** Click, Payme, Uzum Pay integratsiyalari.
+* **Bot:** Telegram Bot (yangi buyurtmalar haqida administratorlarga xabar berish uchun).
+
+
+
+---
+
+## 6. BOSQICHMA-BOSQICH AMALGA OSHIRISH (ROADMAP)
+
+1. **1-bosqich (Prototip & Dizayn):** UI/UX dizayn (Figma), ma'lumotlar bazasi arxitekturasini loyihalash.
+2. **2-bosqich (MVP Backend & Admin Panel):** Avtopark va buyurtmalar moduli, CRM hamda avtorizatsiya.
+3. **3-bosqich (Frontend & Integratsiyalar):** Mijozlar uchun veb-sayt, to'lov tizimlari va SMS xizmatini ulash.
+4. **4-bosqich (Testlash & Deploy):** QA testlar, xavfsizlik audit va serverga (VPS/Cloud) joylashtirish.
