@@ -12,6 +12,7 @@ if (isNode) {
   global.Auth = require('../js/auth.js');
   global.ClientView = require('../js/views/clientView.js');
   global.DashboardView = require('../js/views/dashboardView.js');
+  global.FleetView = require('../js/views/fleetView.js');
 } else {
   assert = (cond, msg) => {
     if (!cond) throw new Error(msg || 'Assertion failed');
@@ -167,6 +168,35 @@ async function testDashboardMetrics() {
   assert(Array.isArray(metrics.todayReturns), "todayReturns must be an array");
 }
 
+async function testFleetCrud() {
+  if (typeof FleetView === 'undefined') {
+    throw new Error("FleetView is not defined");
+  }
+  const newId = FleetView.addCar({
+    make: 'Chevrolet',
+    model: 'Cobalt Style',
+    year: 2024,
+    category: 'Ekonom',
+    transmission: 'Avtomat',
+    fuel_type: 'Benzin',
+    seats: 5,
+    daily_rate: 320000,
+    deposit_amount: 1500000,
+    plate_number: '01Z999ZZ',
+    image_url: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341',
+    features: ['Konditsioner', 'Bluetooth']
+  });
+  assert(newId > 0, "New car should have valid ID");
+
+  FleetView.updateCarStatus(newId, 'maintenance');
+  const car = DB.query("SELECT status FROM cars WHERE id = ?", [newId])[0];
+  assert(car.status === 'maintenance', "Status should update to maintenance");
+
+  FleetView.deleteCar(newId);
+  const deletedCar = DB.query("SELECT status FROM cars WHERE id = ?", [newId])[0];
+  assert(deletedCar.status === 'archived', "Deleted car status should be archived");
+}
+
 async function runAll() {
   console.log("=== RentCar Test Suite ===");
   await runTest("testDbInitialization", testDbInitialization);
@@ -176,6 +206,7 @@ async function runAll() {
   await runTest("testBookingConflictPrevention", testBookingConflictPrevention);
   await runTest("testBookingCancellation", testBookingCancellation);
   await runTest("testDashboardMetrics", testDashboardMetrics);
+  await runTest("testFleetCrud", testFleetCrud);
   
   const passed = testResults.filter(r => r.status === 'PASS').length;
   const total = testResults.length;
