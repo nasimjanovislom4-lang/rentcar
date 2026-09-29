@@ -11,6 +11,7 @@ if (isNode) {
   global.DB = require('../js/db.js');
   global.Auth = require('../js/auth.js');
   global.ClientView = require('../js/views/clientView.js');
+  global.DashboardView = require('../js/views/dashboardView.js');
 } else {
   assert = (cond, msg) => {
     if (!cond) throw new Error(msg || 'Assertion failed');
@@ -155,6 +156,17 @@ async function testBookingCancellation() {
   }
 }
 
+async function testDashboardMetrics() {
+  if (typeof DashboardView === 'undefined') {
+    throw new Error("DashboardView is not defined");
+  }
+  const metrics = DashboardView.getMetrics();
+  assert(metrics.totalCars >= 6, "Total cars should be >= 6");
+  assert(typeof metrics.revenue === 'number', "Revenue should be a number");
+  assert(metrics.availableCars >= 1, "There should be available cars");
+  assert(Array.isArray(metrics.todayReturns), "todayReturns must be an array");
+}
+
 async function runAll() {
   console.log("=== RentCar Test Suite ===");
   await runTest("testDbInitialization", testDbInitialization);
@@ -163,6 +175,7 @@ async function runAll() {
   await runTest("testCarFiltering", testCarFiltering);
   await runTest("testBookingConflictPrevention", testBookingConflictPrevention);
   await runTest("testBookingCancellation", testBookingCancellation);
+  await runTest("testDashboardMetrics", testDashboardMetrics);
   
   const passed = testResults.filter(r => r.status === 'PASS').length;
   const total = testResults.length;
