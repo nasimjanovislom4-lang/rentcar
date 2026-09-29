@@ -13,6 +13,7 @@ if (isNode) {
   global.ClientView = require('../js/views/clientView.js');
   global.DashboardView = require('../js/views/dashboardView.js');
   global.FleetView = require('../js/views/fleetView.js');
+  global.BookingsView = require('../js/views/bookingsView.js');
 } else {
   assert = (cond, msg) => {
     if (!cond) throw new Error(msg || 'Assertion failed');
@@ -197,6 +198,38 @@ async function testFleetCrud() {
   assert(deletedCar.status === 'archived', "Deleted car status should be archived");
 }
 
+async function testBookingWorkflowAndInspection() {
+  if (typeof BookingsView === 'undefined') {
+    throw new Error("BookingsView is not defined");
+  }
+  // Create a dedicated booking for this test
+  const res = ClientView.submitBooking({
+    car_id: 3,
+    user_name: 'Workflow Client',
+    phone: '+998909876543',
+    start_date: '2026-11-20',
+    end_date: '2026-11-25',
+    payment_method: 'click'
+  });
+  assert(res.success === true, "Should create booking successfully");
+  const bId = res.bookingId;
+
+  BookingsView.updateBookingStatus(bId, 'confirmed');
+  let check = DB.query("SELECT status FROM bookings WHERE id = ?", [bId])[0];
+  assert(check.status === 'confirmed', "Booking status should be confirmed");
+
+  BookingsView.recordInspection({
+    booking_id: bId,
+    inspection_type: 'pickup',
+    fuel_level: 100,
+    mileage: 15400,
+    damages_note: 'Old bamperda mayda tirnalgan joyi bor'
+  });
+  const insp = DB.query("SELECT * FROM handover_inspections WHERE booking_id = ? AND inspection_type = 'pickup'", [bId]);
+  assert(insp.length > 0, "Handover inspection act should be recorded in SQLite");
+  assert(insp[0].fuel_level === 100, "Fuel level should match");
+}
+
 async function runAll() {
   console.log("=== RentCar Test Suite ===");
   await runTest("testDbInitialization", testDbInitialization);
@@ -207,6 +240,7 @@ async function runAll() {
   await runTest("testBookingCancellation", testBookingCancellation);
   await runTest("testDashboardMetrics", testDashboardMetrics);
   await runTest("testFleetCrud", testFleetCrud);
+  await runTest("testBookingWorkflowAndInspection", testBookingWorkflowAndInspection);
   
   const passed = testResults.filter(r => r.status === 'PASS').length;
   const total = testResults.length;
