@@ -91,17 +91,31 @@ const App = {
 
     if (role === 'client') {
       navContainer.innerHTML = `
-        <span class="nav-item ${this.currentView === 'client' ? 'active' : ''}" data-nav="client">🚗 Avtopark Katalogi</span>
-        <span class="nav-item ${this.currentView === 'my-bookings' ? 'active' : ''}" data-nav="my-bookings">📦 Mening Buyurtmalarim</span>
+        <span class="nav-item ${this.currentView === 'client' ? 'active' : ''}" data-nav="client">
+          <i data-lucide="layout-grid" style="width:15px;height:15px;"></i> Avtopark Katalogi
+        </span>
+        <span class="nav-item ${this.currentView === 'my-bookings' ? 'active' : ''}" data-nav="my-bookings">
+          <i data-lucide="package" style="width:15px;height:15px;"></i> Mening Buyurtmalarim
+        </span>
       `;
     } else {
       navContainer.innerHTML = `
-        <span class="nav-item ${this.currentView === 'dashboard' ? 'active' : ''}" data-nav="dashboard">📊 Dashboard</span>
-        <span class="nav-item ${this.currentView === 'fleet' ? 'active' : ''}" data-nav="fleet">🚗 Avtopark</span>
-        <span class="nav-item ${this.currentView === 'bookings' ? 'active' : ''}" data-nav="bookings">📋 Buyurtmalar</span>
-        <span class="nav-item ${this.currentView === 'crm' ? 'active' : ''}" data-nav="crm">👥 Mijozlar (CRM)</span>
+        <span class="nav-item ${this.currentView === 'dashboard' ? 'active' : ''}" data-nav="dashboard">
+          <i data-lucide="bar-chart-2" style="width:15px;height:15px;"></i> Dashboard
+        </span>
+        <span class="nav-item ${this.currentView === 'fleet' ? 'active' : ''}" data-nav="fleet">
+          <i data-lucide="car" style="width:15px;height:15px;"></i> Avtopark
+        </span>
+        <span class="nav-item ${this.currentView === 'bookings' ? 'active' : ''}" data-nav="bookings">
+          <i data-lucide="clipboard-list" style="width:15px;height:15px;"></i> Buyurtmalar
+        </span>
+        <span class="nav-item ${this.currentView === 'crm' ? 'active' : ''}" data-nav="crm">
+          <i data-lucide="users" style="width:15px;height:15px;"></i> Mijozlar (CRM)
+        </span>
         ${role === 'admin' ? `
-          <span class="nav-item ${this.currentView === 'reports' ? 'active' : ''}" data-nav="reports">💰 Moliya & Baza</span>
+          <span class="nav-item ${this.currentView === 'reports' ? 'active' : ''}" data-nav="reports">
+            <i data-lucide="wallet" style="width:15px;height:15px;"></i> Moliya & Baza
+          </span>
         ` : ''}
       `;
     }
@@ -112,6 +126,9 @@ const App = {
         this.navigate(view);
       };
     });
+
+    // Re-render Lucide icons
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   },
 
   navigate(viewName) {
@@ -164,28 +181,28 @@ const App = {
           <div class="sidebar-heading">Boshqaruv Tizimi (${role.toUpperCase()})</div>
           
           <div class="sidebar-link ${activeSubView === 'dashboard' ? 'active' : ''}" data-admin-view="dashboard">
-            <span class="link-icon">📊</span>
+            <span class="link-icon"><i data-lucide="bar-chart-2" style="width:17px;height:17px;"></i></span>
             <span>Dashboard</span>
           </div>
 
           <div class="sidebar-link ${activeSubView === 'fleet' ? 'active' : ''}" data-admin-view="fleet">
-            <span class="link-icon">🚗</span>
+            <span class="link-icon"><i data-lucide="car" style="width:17px;height:17px;"></i></span>
             <span>Avtopark Nazorati</span>
           </div>
 
           <div class="sidebar-link ${activeSubView === 'bookings' ? 'active' : ''}" data-admin-view="bookings">
-            <span class="link-icon">📋</span>
+            <span class="link-icon"><i data-lucide="clipboard-list" style="width:17px;height:17px;"></i></span>
             <span>Buyurtmalar & Aktlar</span>
           </div>
 
           <div class="sidebar-link ${activeSubView === 'crm' ? 'active' : ''}" data-admin-view="crm">
-            <span class="link-icon">👥</span>
+            <span class="link-icon"><i data-lucide="users" style="width:17px;height:17px;"></i></span>
             <span>Mijozlar & Blacklist</span>
           </div>
 
           ${role === 'admin' ? `
             <div class="sidebar-link ${activeSubView === 'reports' ? 'active' : ''}" data-admin-view="reports">
-              <span class="link-icon">💰</span>
+              <span class="link-icon"><i data-lucide="wallet" style="width:17px;height:17px;"></i></span>
               <span>Moliya & SQLite Baza</span>
             </div>
           ` : ''}
@@ -194,8 +211,8 @@ const App = {
             <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;">
               Tizim holati: <strong class="text-emerald">SQLite WASM Faol</strong>
             </div>
-            <button class="btn btn-secondary btn-sm" id="btn-sidebar-view-client" style="width: 100%;">
-              🌐 Mijoz Saytiga O'tish
+            <button class="btn btn-secondary btn-sm" id="btn-sidebar-view-client" style="width: 100%; gap: 6px;">
+              <i data-lucide="globe" style="width:14px;height:14px;"></i> Mijoz Saytiga O'tish
             </button>
           </div>
         </aside>
@@ -227,6 +244,9 @@ const App = {
         this.navigate(v);
       };
     });
+
+    // Re-render Lucide icons after DOM update
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 
     const clientBtn = document.getElementById('btn-sidebar-view-client');
     if (clientBtn) {

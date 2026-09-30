@@ -7,19 +7,30 @@
   <meta name="description"
     content="RentCar - O'zbekistonda zamonaviy avtomobillarni ijaraga berish va avtoparkni boshqarish platformasi. Tezkor onlayn bron va serverless SQLite boshqaruvi.">
   <meta name="theme-color" content="#0a0e17">
+  <meta name="robots" content="index, follow">
   <title>RentCar – Avtomobillarni Ijaraga Berish Platformasi</title>
 
-  <!-- Google Fonts & Stylesheets -->
+  <!-- Performance Hints -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com">
+
+  <!-- Stylesheets -->
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/client.css">
   <link rel="stylesheet" href="css/admin.css">
+
+  <!-- Lucide Icons (SVG icon library) -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 
 <body>
   <!-- Global Navigation Bar -->
   <header class="navbar" id="app-navbar">
     <div class="brand-logo" id="brand-logo" style="cursor: pointer;">
-      <div class="logo-icon">🚗</div>
+      <div class="logo-icon">
+        <i data-lucide="car" style="width:20px;height:20px;stroke:white;"></i>
+      </div>
       <div>Rent<span class="accent">Car</span></div>
     </div>
 
@@ -31,27 +42,32 @@
     <!-- Role Switcher & Action Controls -->
     <div style="display: flex; align-items: center; gap: 14px;">
       <!-- Language Pill -->
-      <div
-        style="font-size: 0.825rem; color: var(--text-muted); background: var(--bg-surface); padding: 4px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-        🇺🇿 UZ
+      <div class="lang-pill">
+        <i data-lucide="globe" style="width:14px;height:14px;"></i>
+        UZ
       </div>
 
       <!-- Role Switcher -->
       <div class="role-badge-box" id="role-switcher-box" title="Foydalanuvchi rolini o'zgartirish">
-        <button class="role-btn active" data-role="client" id="role-btn-client">👤 Mijoz</button>
-        <button class="role-btn" data-role="manager" id="role-btn-manager">💼 Menejer</button>
-        <button class="role-btn" data-role="admin" id="role-btn-admin">👑 Admin</button>
+        <button class="role-btn active" data-role="client" id="role-btn-client">
+          <i data-lucide="user" style="width:13px;height:13px;"></i> Mijoz
+        </button>
+        <button class="role-btn" data-role="manager" id="role-btn-manager">
+          <i data-lucide="briefcase" style="width:13px;height:13px;"></i> Menejer
+        </button>
+        <button class="role-btn" data-role="admin" id="role-btn-admin">
+          <i data-lucide="shield-check" style="width:13px;height:13px;"></i> Admin
+        </button>
       </div>
     </div>
   </header>
 
   <!-- Main View Container -->
   <main id="app-viewport">
-    <div style="text-align: center; padding: 100px 20px;">
-      <div style="font-size: 2.5rem; margin-bottom: 16px;">⏳</div>
+    <div class="app-loading-screen">
+      <div class="loading-spinner"></div>
       <h2>RentCar Platformasi Yuklanmoqda...</h2>
-      <p style="color: var(--text-muted); margin-top: 8px;">SQLite WebAssembly bazasi va modullar initsializatsiya
-        qilinmoqda.</p>
+      <p>SQLite WebAssembly bazasi va modullar initsializatsiya qilinmoqda.</p>
     </div>
   </main>
 
