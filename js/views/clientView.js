@@ -260,7 +260,27 @@ const ClientView = {
           </div>
         </section>
 
-        <!-- Category Filters -->
+        <!-- Filter Bar -->
+        <div class="catalog-filter-bar">
+          <div class="filter-sort-group">
+            <span class="filter-label">Narx bo'yicha saralash</span>
+            <select id="sort-select" class="filter-select">
+              <option value="asc">Saralash</option>
+              <option value="desc">Qimmat → Arzon</option>
+              <option value="asc_p">Arzon → Qimmat</option>
+            </select>
+          </div>
+          <div class="filter-price-group">
+            <span class="filter-label">Narx</span>
+            <input type="number" id="price-min" class="filter-price-input" placeholder="min">
+            <span class="filter-dash">&mdash;</span>
+            <input type="number" id="price-max" class="filter-price-input" placeholder="max">
+          </div>
+          <div class="filter-actions">
+            <button id="btn-apply-filter" class="btn-filter-apply">Filterni qo'llash</button>
+            <button id="btn-reset-filter" class="btn-filter-reset">Bekor qilish</button>
+          </div>
+        </div>
         <div class="category-filter-bar">
           ${categories.map(c => `
             <button class="filter-chip ${this.activeCategory === c.id ? 'active' : ''}" data-cat="${c.id}">
@@ -305,41 +325,31 @@ const ClientView = {
 
   renderCarCard(car) {
     const isAvail = car.status === 'available';
-    const features = car.features_json ? JSON.parse(car.features_json) : [];
+    const category = car.category || 'Premium';
+    const priceUZS = (car.daily_rate * 100).toLocaleString('ru-RU');
 
     return `
-      <div class="car-card">
-        <div class="car-image-box">
-          <img src="${car.image_url}" alt="${car.make} ${car.model}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80'">
-          <span class="badge badge-${car.status === 'available' ? 'available' : 'rented'} car-status-pill">
-            ${car.status === 'available' ? "● Bo'sh" : (car.status === 'rented' ? "● Band" : "● " + car.status)}
-          </span>
-          <span class="badge badge-available car-category-badge">${car.category}</span>
+      <div class="car-card-new">
+        <div class="car-img-wrap">
+          <img
+            src="${car.image_url}"
+            alt="${car.make} ${car.model}"
+            loading="lazy"
+            onerror="this.src='https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80'"
+          >
+          ${!isAvail ? '<div class="car-unavail-overlay"><span>Band</span></div>' : ''}
         </div>
-        <div class="car-card-body">
-          <div class="car-title-row">
-            <h3 class="car-name">${car.make} ${car.model}</h3>
-            <span class="car-year">${car.year}-yil</span>
-          </div>
-
-          <div class="car-specs-row">
-            <span class="spec-chip">⚙️ ${car.transmission}</span>
-            <span class="spec-chip">⛽ ${car.fuel_type}</span>
-            <span class="spec-chip">👥 ${car.seats} o'rin</span>
-            <span class="spec-chip">🔢 ${car.plate_number}</span>
-          </div>
-
-          <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
-            ${features.slice(0, 3).join(' • ')}
-          </div>
-
-          <div class="car-pricing-row">
-            <div>
-              <div class="daily-price">${(car.daily_rate).toLocaleString()} <span>so'm / kun</span></div>
-              <div class="deposit-text">Garov depoziti: ${(car.deposit_amount).toLocaleString()} so'm</div>
-            </div>
-            <button class="btn ${isAvail ? 'btn-primary' : 'btn-secondary'} btn-book-car" data-car-id="${car.id}" ${isAvail ? '' : 'disabled'}>
-              ${isAvail ? '⚡ Band qilish' : 'Band'}
+        <div class="car-card-new-body">
+          <span class="car-cat-label">${category.toUpperCase()}</span>
+          <h3 class="car-title-new">${car.make} ${car.model}</h3>
+          <div class="car-price-new">${(car.daily_rate).toLocaleString('ru-RU')} <span>UZS</span></div>
+          <div class="car-actions-new">
+            <a class="btn-telegram-new" href="https://t.me/rentcar_uz" target="_blank">
+              <i data-lucide="send" style="width:14px;height:14px;"></i>
+              Telegramga yozish
+            </a>
+            <button class="btn-book-new btn-book-car" data-car-id="${car.id}" ${isAvail ? '' : 'disabled'}>
+              ${isAvail ? 'Band qilish' : 'Band'}
             </button>
           </div>
         </div>
@@ -773,6 +783,49 @@ const ClientView = {
     }
 
     this.initCardButtons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Filter apply button
+    const applyFilter = document.getElementById('btn-apply-filter');
+    if (applyFilter) {
+      applyFilter.onclick = () => {
+        const minEl = document.getElementById('price-min');
+        const maxEl = document.getElementById('price-max');
+        const sortEl = document.getElementById('sort-select');
+        const minPrice = minEl && minEl.value ? parseInt(minEl.value) : null;
+        const maxPrice = maxEl && maxEl.value ? parseInt(maxEl.value) : null;
+        const sortDir = sortEl ? sortEl.value : 'asc';
+        const grid = document.getElementById('cars-catalog-grid');
+        if (grid) {
+          let cars = this.filterCars({ category: this.activeCategory, max_price: maxPrice });
+          if (minPrice) cars = cars.filter(c => c.daily_rate >= minPrice);
+          cars = cars.sort((a, b) => sortDir === 'desc' ? b.daily_rate - a.daily_rate : a.daily_rate - b.daily_rate);
+          grid.innerHTML = cars.map(car => this.renderCarCard(car)).join('') || '<p style="grid-column:1/-1;text-align:center;padding:40px;color:#666;">Hech narsa topilmadi</p>';
+          this.initCardButtons();
+          if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+      };
+    }
+
+    // Filter reset button
+    const resetFilter = document.getElementById('btn-reset-filter');
+    if (resetFilter) {
+      resetFilter.onclick = () => {
+        const minEl = document.getElementById('price-min');
+        const maxEl = document.getElementById('price-max');
+        const sortEl = document.getElementById('sort-select');
+        if (minEl) minEl.value = '';
+        if (maxEl) maxEl.value = '';
+        if (sortEl) sortEl.value = 'asc';
+        const grid = document.getElementById('cars-catalog-grid');
+        if (grid) {
+          const cars = this.filterCars({ category: this.activeCategory });
+          grid.innerHTML = cars.map(car => this.renderCarCard(car)).join('');
+          this.initCardButtons();
+          if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+      };
+    }
 
     // My Bookings search
     const myBookingsSearchBtn = document.getElementById('btn-search-my-bookings');
