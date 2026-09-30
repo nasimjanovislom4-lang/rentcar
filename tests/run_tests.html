@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>RentCar - Test Suite Runner</title>
+  <style>
+    body {
+      background: #0a0e17;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 30px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 16px;
+    }
+    .status-badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .badge-pass { background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid #10b981; }
+    .badge-fail { background: rgba(244,63,94,0.2); color: #fb7185; border: 1px solid #f43f5e; }
+    .test-card {
+      background: #111827;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .test-name { font-weight: 600; font-size: 1rem; }
+    .test-meta { font-size: 0.85rem; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1>🧪 RentCar Automated Test Suite</h1>
+      <p style="color: #94a3b8; margin-top: 4px;">SQLite WASM, IndexedDB, RBAC, Booking & CRM Integrity Tests</p>
+    </div>
+    <div id="overall-status">
+      <span class="status-badge" style="background: #374151;">Testlar bajarilmoqda...</span>
+    </div>
+  </div>
+
+  <div id="results-container"></div>
+
+  <!-- App dependencies for in-browser testing -->
+  <script src="../js/vendor/sql-wasm.js"></script>
+  <script src="../js/schema.js"></script>
+  <script src="../js/db.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/views/clientView.js"></script>
+  <script src="../js/views/dashboardView.js"></script>
+  <script src="../js/views/fleetView.js"></script>
+  <script src="../js/views/bookingsView.js"></script>
+  <script src="../js/views/crmView.js"></script>
+  <script src="../js/views/reportsView.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="test_suite.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', async () => {
+      const container = document.getElementById('results-container');
+      const overall = document.getElementById('overall-status');
+
+      await runAll();
+
+      container.innerHTML = testResults.map(r => `
+        <div class="test-card">
+          <div>
+            <div class="test-name">${r.name}</div>
+            ${r.error ? `<div style="color: #fb7185; font-size: 0.85rem; margin-top: 4px;">${r.error}</div>` : ''}
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="test-meta">${r.duration}ms</span>
+            <span class="status-badge ${r.status === 'PASS' ? 'badge-pass' : 'badge-fail'}">
+              ${r.status === 'PASS' ? '✓ PASS' : '✗ FAIL'}
+            </span>
+          </div>
+        </div>
+      `).join('');
+
+      const passed = testResults.filter(r => r.status === 'PASS').length;
+      const total = testResults.length;
+      if (passed === total) {
+        overall.innerHTML = `<span class="status-badge badge-pass">BARCHA TESTLAR O'TDI (${passed}/${total})</span>`;
+      } else {
+        overall.innerHTML = `<span class="status-badge badge-fail">${total - passed} TA TESTDA XATOLIK (${passed}/${total})</span>`;
+      }
+    });
+  </script>
+</body>
+</html>
