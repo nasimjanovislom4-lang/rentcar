@@ -49,6 +49,31 @@ const DB = {
       this.dbInstance = new this.SQL.Database();
       this.initSchemaAndSeed();
     }
+
+    if (this.migrateLegacyCarImages()) {
+      await this.persist();
+    }
+  },
+
+  migrateLegacyCarImages() {
+    const migrations = [
+      {
+        carId: 2,
+        oldUrl: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80',
+        newUrl: 'assets/cars/chevrolet-tracker-redline.jpg'
+      }
+    ];
+    let migrated = false;
+
+    migrations.forEach(({ carId, oldUrl, newUrl }) => {
+      this.dbInstance.run(
+        "UPDATE cars SET image_url = ? WHERE id = ? AND image_url = ?",
+        [newUrl, carId, oldUrl]
+      );
+      migrated = migrated || this.dbInstance.getRowsModified() > 0;
+    });
+
+    return migrated;
   },
 
   initSchemaAndSeed() {
@@ -101,6 +126,7 @@ const DB = {
       throw new Error("Invalid SQLite 3 database file header");
     }
     this.dbInstance = new this.SQL.Database(data);
+    this.migrateLegacyCarImages();
     await this.persist();
   },
 

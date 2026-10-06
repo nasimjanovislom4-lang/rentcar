@@ -50,6 +50,41 @@ async function testDbInitialization() {
   assert(cars.length >= 6, "At least 6 initial cars must be seeded");
 }
 
+async function testLegacyCarImageMigrations() {
+  const oldImageUrls = [
+    [1, 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80'],
+    [2, 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80'],
+    [3, 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80']
+  ];
+  oldImageUrls.forEach(([carId, imageUrl]) => {
+    DB.exec("UPDATE cars SET image_url = ? WHERE id = ?", [imageUrl, carId]);
+  });
+  await DB.init(DB.exportDatabase());
+  const expectedImages = [
+    [1, 'assets/cars/chevrolet-onix-premier.jpg'],
+    [2, 'assets/cars/chevrolet-tracker-redline.jpg'],
+    [3, 'assets/cars/chevrolet-malibu-2-premier.jpg']
+  ];
+  expectedImages.forEach(([carId, imageUrl]) => {
+    const car = DB.query("SELECT image_url FROM cars WHERE id = ?", [carId])[0];
+    assert(car.image_url === imageUrl, `Existing car ${carId} must migrate to its local image`);
+  });
+}
+
+async function testCarsUseLocalImages() {
+  const expectedImages = [
+    [1, 'assets/cars/chevrolet-onix-premier.jpg'],
+    [2, 'assets/cars/chevrolet-tracker-redline.jpg'],
+    [3, 'assets/cars/chevrolet-malibu-2-premier.jpg']
+  ];
+  expectedImages.forEach(([carId, imageUrl]) => {
+    const car = DB.query("SELECT image_url FROM cars WHERE id = ?", [carId])[0];
+    const imagePath = path.join(__dirname, '..', imageUrl);
+    assert(car.image_url === imageUrl, `Car ${carId} must use its local image asset`);
+    assert(fs.existsSync(imagePath), `Image asset must exist for car ${carId}`);
+  });
+}
+
 async function testCssTokens() {
   if (isNode) {
     const stylesCss = fs.readFileSync(path.join(__dirname, '../css/styles.css'), 'utf8');
@@ -280,6 +315,8 @@ async function testAppRouter() {
 async function runAll() {
   console.log("=== RentCar Test Suite ===");
   await runTest("testDbInitialization", testDbInitialization);
+  await runTest("testLegacyCarImageMigrations", testLegacyCarImageMigrations);
+  await runTest("testCarsUseLocalImages", testCarsUseLocalImages);
   await runTest("testCssTokens", testCssTokens);
   await runTest("testAuthRoleSwitch", testAuthRoleSwitch);
   await runTest("testCarFiltering", testCarFiltering);
