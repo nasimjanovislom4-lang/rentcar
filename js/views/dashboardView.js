@@ -53,9 +53,32 @@ const DashboardView = {
             <h1 class="admin-page-title">Boshqaruv Paneli (Dashboard)</h1>
             <p style="color: var(--text-muted); font-size: 0.9rem;">Avtopark holati, real-vaqt statistikasi va kutilayotgan harakatlar</p>
           </div>
-          <div style="display: flex; gap: 10px;">
-            <button class="btn btn-secondary btn-sm" id="btn-quick-export-db">💾 Bazani Saqlash (.sqlite)</button>
-            <button class="btn btn-primary btn-sm" id="btn-goto-fleet">+ Yangi Mashina</button>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-primary btn-sm" id="btn-export-all-excel" style="background: #107c41; border-color: #107c41;">📊 Excelga Yuklash (.xlsx)</button>
+            <button class="btn btn-secondary btn-sm" id="btn-quick-export-db">💾 SQLite Backup</button>
+            <button class="btn btn-secondary btn-sm" id="btn-goto-fleet">+ Yangi Mashina</button>
+          </div>
+        </div>
+
+        <!-- Excel Control Center Hub -->
+        <div class="excel-hub-card" style="background: linear-gradient(135deg, rgba(16, 124, 65, 0.18) 0%, rgba(15, 23, 42, 0.65) 100%); border: 1.5px solid rgba(16, 124, 65, 0.45); border-radius: var(--radius-md); padding: 18px 22px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="font-size: 2.2rem; background: #107c41; color: white; width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; box-shadow: 0 4px 14px rgba(16, 124, 65, 0.4);">X</div>
+            <div>
+              <h3 style="font-size: 1.15rem; margin: 0 0 4px; color: #ffffff;">Excel Boshqaruv Markazi</h3>
+              <p style="font-size: 0.85rem; color: #cbd5e1; margin: 0;">Barcha bo'limlar ma'lumotlarini to'g'ridan-to'g'ri Microsoft Excel (.xlsx) formatida yuklab oling yoki Exceldan yangi ma'lumotlarni kiriting</p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <button class="btn btn-primary btn-sm" id="btn-excel-full-db" style="background: #107c41; border-color: #107c41; font-weight: 700;">📗 To'liq Baza (4 varaqli .xlsx)</button>
+            <button class="btn btn-secondary btn-sm" id="btn-excel-fleet">🚗 Avtopark</button>
+            <button class="btn btn-secondary btn-sm" id="btn-excel-bookings">📋 Buyurtmalar</button>
+            <button class="btn btn-secondary btn-sm" id="btn-excel-finance">💰 Moliya</button>
+            <button class="btn btn-secondary btn-sm" id="btn-excel-crm">👥 Mijozlar</button>
+            <label class="btn btn-secondary btn-sm" style="cursor: pointer; margin: 0; background: rgba(255, 255, 255, 0.08);" title="Excel fayl orqali yuklash">
+              📥 Exceldan Yuklash
+              <input type="file" id="dashboard-excel-file-input" accept=".xlsx,.xls,.csv" style="display:none;">
+            </label>
           </div>
         </div>
 
@@ -169,6 +192,90 @@ const DashboardView = {
   },
 
   initListeners() {
+    // Excel Exports
+    const btnExportAll = document.getElementById('btn-export-all-excel');
+    if (btnExportAll) {
+      btnExportAll.onclick = () => {
+        if (typeof ExcelHelper !== 'undefined') {
+          ExcelHelper.exportFullDatabase();
+          if (window.App) window.App.showToast("To'liq baza Excel (.xlsx) fayliga yuklandi!", "success");
+        }
+      };
+    }
+
+    const btnExcelFullDb = document.getElementById('btn-excel-full-db');
+    if (btnExcelFullDb) {
+      btnExcelFullDb.onclick = () => {
+        if (typeof ExcelHelper !== 'undefined') {
+          ExcelHelper.exportFullDatabase();
+          if (window.App) window.App.showToast("To'liq 4-varaqli Excel kitobi yuklab olindi!", "success");
+        }
+      };
+    }
+
+    const btnExcelFleet = document.getElementById('btn-excel-fleet');
+    if (btnExcelFleet) {
+      btnExcelFleet.onclick = () => {
+        if (typeof ExcelHelper !== 'undefined') {
+          ExcelHelper.exportFleet();
+          if (window.App) window.App.showToast("Avtopark jadvali Excelga yuklandi!", "success");
+        }
+      };
+    }
+
+    const btnExcelBookings = document.getElementById('btn-excel-bookings');
+    if (btnExcelBookings) {
+      btnExcelBookings.onclick = () => {
+        if (typeof ExcelHelper !== 'undefined') {
+          ExcelHelper.exportBookings();
+          if (window.App) window.App.showToast("Buyurtmalar jadvali Excelga yuklandi!", "success");
+        }
+      };
+    }
+
+    const btnExcelFinance = document.getElementById('btn-excel-finance');
+    if (btnExcelFinance) {
+      btnExcelFinance.onclick = () => {
+        if (typeof ExcelHelper !== 'undefined') {
+          ExcelHelper.exportFinance();
+          if (window.App) window.App.showToast("Moliya hisoboti Excelga yuklandi!", "success");
+        }
+      };
+    }
+
+    const btnExcelCrm = document.getElementById('btn-excel-crm');
+    if (btnExcelCrm) {
+      btnExcelCrm.onclick = () => {
+        if (typeof ExcelHelper !== 'undefined') {
+          ExcelHelper.exportCrm();
+          if (window.App) window.App.showToast("Mijozlar bazasi Excelga yuklandi!", "success");
+        }
+      };
+    }
+
+    // Excel Import
+    const fileInput = document.getElementById('dashboard-excel-file-input');
+    if (fileInput) {
+      fileInput.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (window.App) window.App.showToast("Excel fayli o'qilmoqda...", "info");
+
+        if (typeof ExcelHelper !== 'undefined') {
+          const res = await ExcelHelper.importFleetFromExcel(file);
+          if (res.success) {
+            if (window.App) {
+              window.App.showToast(`Muvaffaqiyatli! ${res.count} ta avtomobil bazaga kiritildi/yangilandi`, "success");
+              window.App.navigate('dashboard');
+            }
+          } else {
+            if (window.App) window.App.showToast("Xatolik: " + (res.error || "Faylni o'qib bo'lmadi"), "error");
+          }
+        }
+        fileInput.value = '';
+      };
+    }
+
     const quickExport = document.getElementById('btn-quick-export-db');
     if (quickExport) {
       quickExport.onclick = () => {

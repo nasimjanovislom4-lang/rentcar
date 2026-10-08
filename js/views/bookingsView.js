@@ -81,6 +81,7 @@ const BookingsView = {
             <h1 class="admin-page-title">Buyurtmalar Boshqaruvi (Bookings)</h1>
             <p style="color: var(--text-muted); font-size: 0.9rem;">Kelib tushgan buyurtmalar, statuslar nazorati va topshirish/qabul aktlari</p>
           </div>
+          <button class="btn btn-secondary btn-sm" id="btn-export-bookings-excel" style="background: #107c41; color: white; border-color: #107c41;">📊 Excelga Yuklash (.xlsx)</button>
         </div>
 
         <!-- Filter tabs -->
@@ -284,6 +285,17 @@ const BookingsView = {
         if (window.App) {
           window.App.showToast("Akt muvaffaqiyatli saqlandi!", "success");
           window.App.navigate('bookings');
+        }
+      };
+    }
+
+    // Excel Export
+    const exportBtn = document.getElementById('btn-export-bookings-excel');
+    if (exportBtn) {
+      exportBtn.onclick = () => {
+        if (typeof ExcelHelper !== 'undefined') {
+          ExcelHelper.exportBookings();
+          if (window.App) window.App.showToast("Buyurtmalar Excel (.xlsx) fayliga yuklandi!", "success");
         }
       };
     }

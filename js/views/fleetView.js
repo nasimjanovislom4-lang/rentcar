@@ -74,7 +74,15 @@ const FleetView = {
             <h1 class="admin-page-title">Avtopark Boshqaruvi (Fleet)</h1>
             <p style="color: var(--text-muted); font-size: 0.9rem;">Avtomobillar ro'yxati, texnik xizmat ko'rsatish va yangi transport qo'shish</p>
           </div>
-          <button class="btn btn-primary" id="btn-open-add-car-modal">+ Yangi Avtomobil Qo'shish</button>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-secondary btn-sm" id="btn-export-fleet-excel" style="background: #107c41; color: white; border-color: #107c41;">📊 Excelga Yuklash (.xlsx)</button>
+            <label class="btn btn-secondary btn-sm" style="cursor: pointer; margin: 0;" title="Excel fayl orqali yangi mashinalar qo'shish">
+              📥 Exceldan Qo'shish
+              <input type="file" id="fleet-excel-file-input" accept=".xlsx,.xls,.csv" style="display:none;">
+            </label>
+            <button class="btn btn-secondary btn-sm" id="btn-download-fleet-template" title="Excel namuna shabloni">📄 Namuna Shablon</button>
+            <button class="btn btn-primary btn-sm" id="btn-open-add-car-modal">+ Yangi Avtomobil</button>
+          </div>
         </div>
 
         <div class="data-table-container">
@@ -326,6 +334,51 @@ const FleetView = {
 
         closeModal();
         if (window.App) window.App.navigate('fleet');
+      };
+    }
+
+    // Excel Export
+    const exportBtn = document.getElementById('btn-export-fleet-excel');
+    if (exportBtn) {
+      exportBtn.onclick = () => {
+        if (typeof ExcelHelper !== 'undefined') {
+          ExcelHelper.exportFleet();
+          if (window.App) window.App.showToast("Avtopark Excel (.xlsx) fayliga yuklandi!", "success");
+        }
+      };
+    }
+
+    // Excel Template Download
+    const templateBtn = document.getElementById('btn-download-fleet-template');
+    if (templateBtn) {
+      templateBtn.onclick = () => {
+        if (typeof ExcelHelper !== 'undefined') {
+          ExcelHelper.downloadFleetTemplate();
+          if (window.App) window.App.showToast("Namuna Excel shabloni yuklab olindi", "info");
+        }
+      };
+    }
+
+    // Excel Import
+    const fileInput = document.getElementById('fleet-excel-file-input');
+    if (fileInput) {
+      fileInput.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (window.App) window.App.showToast("Excel fayli o'qilmoqda...", "info");
+
+        if (typeof ExcelHelper !== 'undefined') {
+          const res = await ExcelHelper.importFleetFromExcel(file);
+          if (res.success) {
+            if (window.App) {
+              window.App.showToast(`Muvaffaqiyatli! ${res.count} ta avtomobil bazaga kiritildi/yangilandi`, "success");
+              window.App.navigate('fleet');
+            }
+          } else {
+            if (window.App) window.App.showToast("Xatolik: " + (res.error || "Faylni o'qib bo'lmadi"), "error");
+          }
+        }
+        fileInput.value = '';
       };
     }
   }

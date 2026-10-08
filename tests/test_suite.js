@@ -16,6 +16,7 @@ if (isNode) {
   global.BookingsView = require('../js/views/bookingsView.js');
   global.CrmView = require('../js/views/crmView.js');
   global.ReportsView = require('../js/views/reportsView.js');
+  global.ExcelHelper = require('../js/excelHelper.js');
   global.App = require('../js/app.js');
 } else {
   assert = (cond, msg) => {
@@ -344,6 +345,37 @@ async function testCompanyPaymentCardAndSmsNotification() {
   }
 }
 
+async function testExcelExportAndImportFeatures() {
+  assert(ExcelHelper, "ExcelHelper module must be loaded");
+  assert(typeof ExcelHelper.exportFleet === 'function', "ExcelHelper.exportFleet must be a function");
+  assert(typeof ExcelHelper.exportBookings === 'function', "ExcelHelper.exportBookings must be a function");
+  assert(typeof ExcelHelper.exportFinance === 'function', "ExcelHelper.exportFinance must be a function");
+  assert(typeof ExcelHelper.exportCrm === 'function', "ExcelHelper.exportCrm must be a function");
+  assert(typeof ExcelHelper.exportFullDatabase === 'function', "ExcelHelper.exportFullDatabase must be a function");
+  assert(typeof ExcelHelper.downloadFleetTemplate === 'function', "ExcelHelper.downloadFleetTemplate must be a function");
+  assert(typeof ExcelHelper.importFleetFromExcel === 'function', "ExcelHelper.importFleetFromExcel must be a function");
+
+  if (isNode) {
+    const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+    assert(indexHtml.includes('xlsx.full.min.js'), "index.html must include SheetJS xlsx library");
+    assert(indexHtml.includes('js/excelHelper.js'), "index.html must include js/excelHelper.js");
+
+    const dashHtml = DashboardView.render();
+    assert(dashHtml.includes('btn-export-all-excel'), "Dashboard must have full Excel export button");
+    assert(dashHtml.includes('excel-hub-card'), "Dashboard must render Excel Control Center Hub");
+
+    const fleetHtml = FleetView.render();
+    assert(fleetHtml.includes('btn-export-fleet-excel'), "FleetView must have Excel export button");
+    assert(fleetHtml.includes('fleet-excel-file-input'), "FleetView must have Excel import input");
+
+    const bookHtml = BookingsView.render();
+    assert(bookHtml.includes('btn-export-bookings-excel'), "BookingsView must have Excel export button");
+
+    const repHtml = ReportsView.render();
+    assert(repHtml.includes('btn-export-full-excel'), "ReportsView must have full Excel export button");
+  }
+}
+
 async function runAll() {
   console.log("=== RentCar Test Suite ===");
   await runTest("testDbInitialization", testDbInitialization);
@@ -362,6 +394,7 @@ async function runAll() {
   await runTest("testAppRouter", testAppRouter);
   await runTest("testMercedesRemovedAndVideosMappedByName", testMercedesRemovedAndVideosMappedByName);
   await runTest("testCompanyPaymentCardAndSmsNotification", testCompanyPaymentCardAndSmsNotification);
+  await runTest("testExcelExportAndImportFeatures", testExcelExportAndImportFeatures);
   
   const passed = testResults.filter(r => r.status === 'PASS').length;
   const total = testResults.length;

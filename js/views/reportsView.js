@@ -67,8 +67,10 @@ const ReportsView = {
             <h1 class="admin-page-title">Moliya va Ma'lumotlar Bazasi (Reports & SQLite)</h1>
             <p style="color: var(--text-muted); font-size: 0.9rem;">Tushumlar, xarajatlar balansi, CSV eksport va haqiqiy SQLite bazani saqlash</p>
           </div>
-          <div style="display: flex; gap: 10px;">
-            <button class="btn btn-secondary btn-sm" id="btn-export-csv">📊 CSV Eksport</button>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-primary btn-sm" id="btn-export-full-excel" style="background: #107c41; border-color: #107c41; font-weight: 700;">📗 To'liq Baza (.xlsx)</button>
+            <button class="btn btn-secondary btn-sm" id="btn-export-finance-excel">📊 Moliya Excel</button>
+            <button class="btn btn-secondary btn-sm" id="btn-export-csv">📄 CSV Eksport</button>
             <button class="btn btn-primary btn-sm" id="btn-open-expense-modal">- Yangi Xarajat</button>
           </div>
         </div>
@@ -240,6 +242,28 @@ const ReportsView = {
         a.download = `rentcar_moliya_${new Date().toISOString().split('T')[0]}.csv`;
         a.click();
         if (window.App) window.App.showToast("Moliya hisoboti CSV formatida yuklandi", "success");
+      };
+    }
+
+    // Full Database Excel Export (.xlsx)
+    const fullExcelBtn = document.getElementById('btn-export-full-excel');
+    if (fullExcelBtn) {
+      fullExcelBtn.onclick = () => {
+        if (typeof ExcelHelper !== 'undefined') {
+          ExcelHelper.exportFullDatabase();
+          if (window.App) window.App.showToast("To'liq baza 4-varaqli Excel (.xlsx) fayliga yuklandi!", "success");
+        }
+      };
+    }
+
+    // Finance Excel Export (.xlsx)
+    const finExcelBtn = document.getElementById('btn-export-finance-excel');
+    if (finExcelBtn) {
+      finExcelBtn.onclick = () => {
+        if (typeof ExcelHelper !== 'undefined') {
+          ExcelHelper.exportFinance();
+          if (window.App) window.App.showToast("Moliya hisoboti Excel (.xlsx) fayliga yuklandi!", "success");
+        }
       };
     }
 
