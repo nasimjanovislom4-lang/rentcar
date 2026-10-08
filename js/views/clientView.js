@@ -30,14 +30,36 @@ const ClientView = {
     gps: { name: "GPS navigator", daily: 20000, desc: "Oflayn xaritalar va tezlik radarlari bilan" }
   },
 
-  carVideos: {
-    1: 'assets/video/onix.mp4',
-    2: 'assets/video/tracer.mp4',
-    3: 'assets/video/malibu.mp4',
-    4: 'assets/video/BYD chempion.mp4',
-    6: 'assets/video/yaun up.mp4',
-    8: 'assets/video/li 9.mp4',
-    9: 'assets/video/land cruzer 200.mp4'
+  carVideosByName: {
+    'onix': 'assets/video/onix.mp4',
+    'tracker': 'assets/video/tracer.mp4',
+    'tracer': 'assets/video/tracer.mp4',
+    'malibu': 'assets/video/malibu.mp4',
+    'champion': 'assets/video/BYD chempion.mp4',
+    'song': 'assets/video/BYD chempion.mp4',
+    'yuan': 'assets/video/yaun up.mp4',
+    'yaun': 'assets/video/yaun up.mp4',
+    'l9': 'assets/video/li 9.mp4',
+    'lixiang': 'assets/video/li 9.mp4',
+    'li 9': 'assets/video/li 9.mp4',
+    'land cruiser': 'assets/video/land cruzer 200.mp4',
+    'cruzer': 'assets/video/land cruzer 200.mp4',
+    'gentra': 'assets/video/jentro.mp4',
+    'jentro': 'assets/video/jentro.mp4',
+    'zeekr': 'assets/video/zeekr 9X.mp4'
+  },
+
+  getCarVideo(car) {
+    if (!car) return '';
+    if (car.video_url) return this.encodeAsset(car.video_url);
+
+    const name = `${car.make || ''} ${car.model || ''}`.toLowerCase();
+    for (const [key, path] of Object.entries(this.carVideosByName)) {
+      if (name.includes(key)) {
+        return this.encodeAsset(path);
+      }
+    }
+    return '';
   },
 
   encodeAsset(path) {
@@ -342,7 +364,7 @@ const ClientView = {
     const isAvail = car.status === 'available';
     const category = car.category || 'Premium';
     const imageSrc = this.encodeAsset(car.image_url);
-    const videoSrc = this.carVideos[car.id] ? this.encodeAsset(this.carVideos[car.id]) : '';
+    const videoSrc = this.getCarVideo(car);
     let features = [];
     try {
       features = JSON.parse(car.features_json || '[]').slice(0, 3);
@@ -902,6 +924,18 @@ const ClientView = {
       card.addEventListener('mouseleave', stop);
       card.addEventListener('focusin', play);
       card.addEventListener('focusout', stop);
+
+      const badge = card.querySelector('.car-media-badge');
+      if (badge) {
+        badge.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (card.classList.contains('is-playing')) {
+            stop();
+          } else {
+            play();
+          }
+        });
+      }
     });
   },
 

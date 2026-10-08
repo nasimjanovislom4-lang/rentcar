@@ -95,7 +95,9 @@ const SCHEMA = {
     (6, 'BYD', 'Yuan Up', 2024, 'Elektromobil', 'Avtomat', 'Elektr', 5, 500000, 2500000, 'available', 5200, '01F555FF', 'assets/cars/byd-yuan-up-black.jpg', '["Elektr yurish 401km", "Avtopilot L2", "Iliq o''rindiqlar", "Tezkor zaryad 100kW"]'),
     (7, 'Leapmotor', 'C16', 2024, 'SUV', 'Avtomat', 'Elektr', 7, 800000, 4000000, 'available', 3100, '01L666LL', 'assets/cars/leapmotor-c16.jpg', '["7 o''rinli", "Elektr yurish 500km", "Panorama tom", "Aqlli parkovka"]'),
     (8, 'Lixiang', 'L9 Max', 2024, 'Premium', 'Avtomat', 'Gibrid', 6, 1800000, 7000000, 'available', 7800, '01X777XX', 'assets/cars/lixiang-l9-max.jpg', '["EREV Gibrid 1000km", "Frigerator", "Massage o''rindiq", "40 dyuym ekran"]'),
-    (9, 'Toyota', 'Land Cruiser 200', 2021, 'Premium', 'Avtomat', 'Benzin', 7, 2200000, 8000000, 'available', 48000, '01T888TT', 'assets/cars/toyota-land-cruiser-200.jpg', '["V8 dvigatel", "4WD to''liq yurish", "Charm salon", "7 o''rinli"]');
+    (9, 'Toyota', 'Land Cruiser 200', 2021, 'Premium', 'Avtomat', 'Benzin', 7, 2200000, 8000000, 'available', 48000, '01T888TT', 'assets/cars/toyota-land-cruiser-200.jpg', '["V8 dvigatel", "4WD to''liq yurish", "Charm salon", "7 o''rinli"]'),
+    (10, 'Chevrolet', 'Gentra Elegant', 2023, 'Ekonom', 'Avtomat', 'Benzin', 5, 300000, 1500000, 'available', 32000, '01G999GG', 'assets/cars/Gentro.jpg', '["Konditsioner", "MagiCar pult", "Gaz/Benzin", "Lyuk"]'),
+    (11, 'Zeekr', '9X Sport', 2024, 'Premium', 'Avtomat', 'Elektr', 5, 1200000, 5000000, 'available', 6400, '01Z888ZZ', 'assets/cars/zeekr 9X.jpg', '["Elektr yurish 656km", "Yamaha audio", "Pnevmo-podveska", "0-100 3.8s"]');
 
     -- Bookings
     INSERT INTO bookings (id, booking_code, user_id, car_id, pickup_location, return_location, start_date, end_date, total_days, daily_rate, additional_services_json, total_amount, deposit_amount, status, payment_method, payment_status, created_at) VALUES
@@ -112,7 +114,7 @@ const SCHEMA = {
     INSERT INTO financial_transactions (id, booking_id, type, category, amount, payment_method, note, created_at) VALUES
     (1, 1, 'income', 'ijara_tushumi', 2720000, 'click', 'RC-2026-1001 buyurtmasi uchun ijara to''lovi', '2026-09-27 10:20:00'),
     (2, 2, 'income', 'ijara_tushumi', 1140000, 'payme', 'RC-2026-1002 buyurtmasi uchun ijara to''lovi', '2026-09-19 14:25:00'),
-    (3, NULL, 'expense', 'tamirlash', 450000, 'cash', 'Mercedes E-Class moy va filtr almashtirish', '2026-09-25 16:00:00');
+    (3, NULL, 'expense', 'tamirlash', 450000, 'cash', 'Chevrolet Tracker moy va filtr almashtirish', '2026-09-25 16:00:00');
   `
 };
 

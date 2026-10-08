@@ -312,6 +312,21 @@ async function testAppRouter() {
   assert(typeof App.init === 'function', "App.init must be a function");
 }
 
+async function testMercedesRemovedAndVideosMappedByName() {
+  const merc = DB.query("SELECT * FROM cars WHERE LOWER(make) LIKE '%mercedes%' OR LOWER(model) LIKE '%mercedes%'");
+  assert(merc.length === 0, "Mercedes must be completely removed from cars table");
+
+  assert(ClientView.getCarVideo({ make: 'Chevrolet', model: 'Onix' }).includes('onix.mp4'), "Onix video must match by name");
+  assert(ClientView.getCarVideo({ make: 'Chevrolet', model: 'Tracker' }).includes('tracer.mp4'), "Tracker video must match by name");
+  assert(ClientView.getCarVideo({ make: 'Chevrolet', model: 'Malibu' }).includes('malibu.mp4'), "Malibu video must match by name");
+  assert(ClientView.getCarVideo({ make: 'BYD', model: 'Song Plus Champion' }).includes('chempion.mp4'), "BYD Song Champion video must match by name");
+  assert(ClientView.getCarVideo({ make: 'BYD', model: 'Yuan Up' }).toLowerCase().includes('yaun'), "Yuan Up video must match by name");
+  assert(ClientView.getCarVideo({ make: 'Lixiang', model: 'L9' }).toLowerCase().includes('li'), "Lixiang L9 video must match by name");
+  assert(ClientView.getCarVideo({ make: 'Toyota', model: 'Land Cruiser 200' }).toLowerCase().includes('cruzer'), "Land Cruiser video must match by name");
+  assert(ClientView.getCarVideo({ make: 'Chevrolet', model: 'Gentra' }).includes('jentro.mp4'), "Gentra video must match by name");
+  assert(ClientView.getCarVideo({ make: 'Zeekr', model: '9X Sport' }).toLowerCase().includes('zeekr'), "Zeekr video must match by name");
+}
+
 async function runAll() {
   console.log("=== RentCar Test Suite ===");
   await runTest("testDbInitialization", testDbInitialization);
@@ -328,6 +343,7 @@ async function runAll() {
   await runTest("testCrmBlacklist", testCrmBlacklist);
   await runTest("testFinancialSummaryAndExport", testFinancialSummaryAndExport);
   await runTest("testAppRouter", testAppRouter);
+  await runTest("testMercedesRemovedAndVideosMappedByName", testMercedesRemovedAndVideosMappedByName);
   
   const passed = testResults.filter(r => r.status === 'PASS').length;
   const total = testResults.length;

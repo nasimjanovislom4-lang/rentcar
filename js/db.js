@@ -56,6 +56,41 @@ const DB = {
   },
 
   migrateLegacyCarImages() {
+    let migrated = false;
+
+    // 1. Purge Mercedes if present from older database versions
+    try {
+      this.dbInstance.run("DELETE FROM bookings WHERE car_id IN (SELECT id FROM cars WHERE LOWER(make) LIKE '%mercedes%' OR LOWER(model) LIKE '%mercedes%')");
+      this.dbInstance.run("DELETE FROM cars WHERE LOWER(make) LIKE '%mercedes%' OR LOWER(model) LIKE '%mercedes%'");
+      if (this.dbInstance.getRowsModified() > 0) migrated = true;
+      this.dbInstance.run("UPDATE financial_transactions SET note = 'Chevrolet Tracker moy va filtr almashtirish' WHERE note LIKE '%Mercedes%'");
+    } catch (e) {
+      console.warn("Purge Mercedes warning:", e);
+    }
+
+    // 2. Ensure Gentra and Zeekr exist in fleet
+    try {
+      const gentra = this.query("SELECT id FROM cars WHERE LOWER(model) LIKE '%gentra%'");
+      if (!gentra || gentra.length === 0) {
+        this.dbInstance.run(`
+          INSERT INTO cars (id, make, model, year, category, transmission, fuel_type, seats, daily_rate, deposit_amount, status, mileage, plate_number, image_url, features_json)
+          VALUES (10, 'Chevrolet', 'Gentra Elegant', 2023, 'Ekonom', 'Avtomat', 'Benzin', 5, 300000, 1500000, 'available', 32000, '01G999GG', 'assets/cars/Gentro.jpg', '["Konditsioner", "MagiCar pult", "Gaz/Benzin", "Lyuk"]')
+        `);
+        migrated = true;
+      }
+      const zeekr = this.query("SELECT id FROM cars WHERE LOWER(make) LIKE '%zeekr%'");
+      if (!zeekr || zeekr.length === 0) {
+        this.dbInstance.run(`
+          INSERT INTO cars (id, make, model, year, category, transmission, fuel_type, seats, daily_rate, deposit_amount, status, mileage, plate_number, image_url, features_json)
+          VALUES (11, 'Zeekr', '9X Sport', 2024, 'Premium', 'Avtomat', 'Elektr', 5, 1200000, 5000000, 'available', 6400, '01Z888ZZ', 'assets/cars/zeekr 9X.jpg', '["Elektr yurish 656km", "Yamaha audio", "Pnevmo-podveska", "0-100 3.8s"]')
+        `);
+        migrated = true;
+      }
+    } catch (e) {
+      console.warn("Fleet addition warning:", e);
+    }
+
+    // 3. Migrate legacy image URLs
     const migrations = [
       { carId: 1, oldUrl: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80', newUrl: 'assets/cars/chevrolet-onix-premier.jpg' },
       { carId: 1, oldUrl: 'assets/cars/Chevrolet Onix Premier.jpg', newUrl: 'assets/cars/chevrolet-onix-premier.jpg' },
@@ -69,7 +104,6 @@ const DB = {
       { carId: 8, oldUrl: 'assets/cars/Lixiang L9 Max.jpg', newUrl: 'assets/cars/lixiang-l9-max.jpg' },
       { carId: 9, oldUrl: 'assets/cars/Toyota Land Cruiser 200.jpg', newUrl: 'assets/cars/toyota-land-cruiser-200.jpg' }
     ];
-    let migrated = false;
 
     migrations.forEach(({ carId, oldUrl, newUrl }) => {
       this.dbInstance.run(
