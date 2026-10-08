@@ -569,8 +569,148 @@ body[data-role="client"] .booking-item-card strong {
   color: var(--ink);
 }
 
-body[data-role="client"] .form-input {
+body[data-role="client"] .hero-search-box .form-input,
+body[data-role="client"] .hero-search-box .form-select,
+body[data-role="client"] .search-field .form-input,
+body[data-role="client"] .search-field .form-select {
   color: var(--ink);
+}
+
+/* ====================================================
+   Booking Wizard Modal High-Contrast Typography Fix
+   ==================================================== */
+.modal-box {
+  background: #111a2b !important;
+  color: #f6f3ec !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+body[data-role="client"] .modal-box {
+  color: #f6f3ec !important;
+}
+
+.modal-box h2,
+.modal-box h3,
+.modal-box h4,
+.modal-box strong {
+  color: #ffffff !important;
+}
+
+.modal-box .form-label {
+  color: #e2e8f0 !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem;
+}
+
+.modal-box .form-input,
+.modal-box .form-select,
+.modal-box .form-textarea,
+body[data-role="client"] .modal-box .form-input,
+body[data-role="client"] .modal-box .form-select {
+  background: #18253c !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  color-scheme: dark !important;
+  font-size: 0.95rem;
+}
+
+.modal-box .form-input::placeholder {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.modal-box .form-input:focus,
+.modal-box .form-select:focus,
+body[data-role="client"] .modal-box .form-input:focus {
+  border-color: var(--accent-gold) !important;
+  box-shadow: 0 0 0 3px rgba(196, 163, 90, 0.28) !important;
+  color: #ffffff !important;
+}
+
+/* Wizard Step indicators */
+.modal-box .wizard-step-item {
+  color: #94a3b8 !important;
+}
+
+.modal-box .wizard-step-item.active {
+  color: #ffffff !important;
+}
+
+.modal-box .wizard-step-circle {
+  background: #18253c !important;
+  color: #cbd5e1 !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.modal-box .wizard-step-item.active .wizard-step-circle {
+  background: var(--accent-gradient) !important;
+  color: #1a1408 !important;
+  border-color: transparent !important;
+  font-weight: 700;
+}
+
+/* Addon service cards */
+.modal-box .addon-card {
+  background: #18253c !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #ffffff !important;
+}
+
+.modal-box .addon-card div {
+  color: #ffffff;
+}
+
+.modal-box .addon-card .text-muted,
+.modal-box .addon-card [style*="color: var(--text-muted)"] {
+  color: #94a3b8 !important;
+}
+
+.modal-box .addon-card:hover {
+  background: #202f4a !important;
+  border-color: rgba(196, 163, 90, 0.5) !important;
+}
+
+.modal-box .addon-card.selected {
+  background: #1f304e !important;
+  border-color: var(--accent-gold) !important;
+  box-shadow: 0 0 0 2px rgba(196, 163, 90, 0.35) !important;
+}
+
+/* Price summary card */
+.modal-box .booking-summary-box,
+.modal-box [style*="background: var(--bg-surface)"] {
+  background: #152238 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #e2e8f0 !important;
+}
+
+.modal-box [style*="background: var(--bg-surface)"] span {
+  color: #e2e8f0 !important;
+}
+
+.modal-box [style*="background: var(--bg-surface)"] .text-accent {
+  color: var(--accent-gold) !important;
+  font-weight: 800;
+}
+
+/* Payment option cards */
+.modal-box .payment-option-card {
+  background: #18253c !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #ffffff !important;
+}
+
+.modal-box .payment-option-card:hover {
+  background: #202f4a !important;
+}
+
+.modal-box .payment-option-card.selected {
+  background: #1f304e !important;
+  border-color: var(--accent-gold) !important;
+  box-shadow: 0 0 0 2px rgba(196, 163, 90, 0.35) !important;
+}
+
+.modal-box .payment-option-card [style*="color: var(--text-muted)"] {
+  color: #94a3b8 !important;
 }
 
 @media (max-width: 800px) {

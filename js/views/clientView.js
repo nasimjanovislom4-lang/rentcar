@@ -526,7 +526,7 @@ const ClientView = {
         </div>
 
         <!-- Price Summary Box -->
-        <div style="background: var(--bg-surface); padding: 14px 18px; border-radius: var(--radius-md); margin-top: 18px; border: 1px solid var(--border-color);">
+        <div class="booking-summary-box" style="background: var(--bg-surface); padding: 14px 18px; border-radius: var(--radius-md); margin-top: 18px; border: 1px solid var(--border-color);">
           <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px;">
             <span>Ijara muddati:</span>
             <span style="font-weight: 700;">${calc.days} kun</span>
