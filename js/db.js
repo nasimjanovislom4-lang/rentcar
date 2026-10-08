@@ -90,7 +90,15 @@ const DB = {
       console.warn("Fleet addition warning:", e);
     }
 
-    // 3. Migrate legacy image URLs
+    // 3. Force Yuan Up image and plate update
+    try {
+      this.dbInstance.run("UPDATE cars SET image_url = 'assets/cars/byd-yuan-up.jpg', plate_number = '01K777ZR' WHERE LOWER(model) LIKE '%yuan%'");
+      if (this.dbInstance.getRowsModified() > 0) migrated = true;
+    } catch (e) {
+      console.warn("Yuan Up migration warning:", e);
+    }
+
+    // 4. Migrate legacy image URLs
     const migrations = [
       { carId: 1, oldUrl: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80', newUrl: 'assets/cars/chevrolet-onix-premier.jpg' },
       { carId: 1, oldUrl: 'assets/cars/Chevrolet Onix Premier.jpg', newUrl: 'assets/cars/chevrolet-onix-premier.jpg' },
@@ -99,7 +107,7 @@ const DB = {
       { carId: 3, oldUrl: 'assets/cars/Chevrolet Malibu 2 Premier.jpg', newUrl: 'assets/cars/chevrolet-malibu-2-premier.jpg' },
       { carId: 4, oldUrl: 'assets/cars/BYD Song Plus Champion EV.jpg', newUrl: 'assets/cars/byd-song-plus-champion-ev.jpg' },
       { carId: 5, oldUrl: 'assets/cars/Kia K5 GT-Line.jpg', newUrl: 'assets/cars/kia-k5-gt-line.jpg' },
-      { carId: 6, oldUrl: 'assets/cars/byd yuan up black.jpg', newUrl: 'assets/cars/byd-yuan-up-black.jpg' },
+      { carId: 6, oldUrl: 'assets/cars/byd yuan up black.jpg', newUrl: 'assets/cars/byd-yuan-up.jpg' },
       { carId: 7, oldUrl: 'assets/cars/Leapmotor C16.jpg', newUrl: 'assets/cars/leapmotor-c16.jpg' },
       { carId: 8, oldUrl: 'assets/cars/Lixiang L9 Max.jpg', newUrl: 'assets/cars/lixiang-l9-max.jpg' },
       { carId: 9, oldUrl: 'assets/cars/Toyota Land Cruiser 200.jpg', newUrl: 'assets/cars/toyota-land-cruiser-200.jpg' }
