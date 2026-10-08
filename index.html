@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description"
     content="RentCar - O'zbekistonda zamonaviy avtomobillarni ijaraga berish va avtoparkni boshqarish platformasi. Tezkor onlayn bron va serverless SQLite boshqaruvi.">
-  <meta name="theme-color" content="#0a0e17">
+  <meta name="theme-color" content="#0b1220">
   <meta name="robots" content="index, follow">
   <title>RentCar – Avtomobillarni Ijaraga Berish Platformasi</title>
 
@@ -24,30 +24,31 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 
-<body>
+<body data-role="client">
   <!-- Global Navigation Bar -->
   <header class="navbar" id="app-navbar">
-    <div class="brand-logo" id="brand-logo" style="cursor: pointer;">
+    <div class="brand-logo" id="brand-logo">
       <div class="logo-icon">
-        <i data-lucide="car" style="width:20px;height:20px;stroke:white;"></i>
+        <i data-lucide="car" style="width:20px;height:20px;"></i>
       </div>
       <div>Rent<span class="accent">Car</span></div>
     </div>
+
+    <button class="nav-toggle" id="nav-toggle" type="button" aria-label="Menyu">
+      <i data-lucide="menu" style="width:18px;height:18px;"></i>
+    </button>
 
     <!-- Dynamic Nav Links -->
     <nav class="nav-links" id="main-nav-links">
       <!-- Injected by app.js based on active role -->
     </nav>
 
-    <!-- Role Switcher & Action Controls -->
-    <div style="display: flex; align-items: center; gap: 14px;">
-      <!-- Language Pill -->
+    <div class="navbar-end">
       <div class="lang-pill">
         <i data-lucide="globe" style="width:14px;height:14px;"></i>
         UZ
       </div>
 
-      <!-- Role Switcher -->
       <div class="role-badge-box" id="role-switcher-box" title="Foydalanuvchi rolini o'zgartirish">
         <button class="role-btn active" data-role="client" id="role-btn-client">
           <i data-lucide="user" style="width:13px;height:13px;"></i> Mijoz

@@ -18,8 +18,9 @@ const App = {
 
       this.initRoleSwitcher();
       this.updateNavbar();
-      
+
       const role = typeof Auth !== 'undefined' ? Auth.getRole() : 'client';
+      this.applyRoleTheme(role);
       this.navigate(role === 'client' ? 'client' : 'dashboard');
 
       // Listen to role changes
@@ -44,7 +45,17 @@ const App = {
     }
   },
 
+  applyRoleTheme(role) {
+    if (isNodeApp || !document.body) return;
+    document.body.setAttribute('data-role', role || 'client');
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeMeta) {
+      themeMeta.setAttribute('content', role === 'client' ? '#f6f3ec' : '#0b1220');
+    }
+  },
+
   handleRoleChange(newRole) {
+    this.applyRoleTheme(newRole);
     this.updateRoleButtons(newRole);
     this.updateNavbar();
     if (newRole === 'client') {
@@ -72,6 +83,14 @@ const App = {
         }
       };
     });
+
+    const navToggle = document.getElementById('nav-toggle');
+    const navLinks = document.getElementById('main-nav-links');
+    if (navToggle && navLinks) {
+      navToggle.onclick = () => {
+        navLinks.classList.toggle('open');
+      };
+    }
   },
 
   updateRoleButtons(activeRole) {
@@ -123,6 +142,7 @@ const App = {
     navContainer.querySelectorAll('.nav-item').forEach(item => {
       item.onclick = () => {
         const view = item.getAttribute('data-nav');
+        navContainer.classList.remove('open');
         this.navigate(view);
       };
     });
@@ -137,6 +157,7 @@ const App = {
     if (!viewport) return;
 
     const role = typeof Auth !== 'undefined' ? Auth.getRole() : 'client';
+    this.applyRoleTheme(role);
     this.updateNavbar();
 
     // 1. Client Views

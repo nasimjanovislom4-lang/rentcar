@@ -30,6 +30,21 @@ const ClientView = {
     gps: { name: "GPS navigator", daily: 20000, desc: "Oflayn xaritalar va tezlik radarlari bilan" }
   },
 
+  carVideos: {
+    1: 'assets/video/onix.mp4',
+    2: 'assets/video/tracer.mp4',
+    3: 'assets/video/malibu.mp4',
+    4: 'assets/video/BYD chempion.mp4',
+    6: 'assets/video/yaun up.mp4',
+    8: 'assets/video/li 9.mp4',
+    9: 'assets/video/land cruzer 200.mp4'
+  },
+
+  encodeAsset(path) {
+    if (!path) return '';
+    return path.split('/').map((segment) => encodeURIComponent(segment)).join('/');
+  },
+
   filterCars(criteria = {}) {
     if (typeof DB === 'undefined') return [];
     let sql = "SELECT * FROM cars WHERE status != 'archived'";
@@ -222,6 +237,7 @@ const ClientView = {
       <div class="client-container">
         <!-- Hero Section -->
         <section class="hero-section">
+          <div class="hero-kicker">Premium avtopark • Toshkent</div>
           <h1 class="hero-title">O'zbekistonda Ishonchli va Qulay <span class="text-accent">Avtomobillar Ijarasi</span></h1>
           <p class="hero-subtitle">Eng so'nggi rusumdagi avtomobillarni 3 qadamda onlayn band qiling. Yashirin to'lovlarsiz va tezkor topshirish.</p>
 
@@ -265,9 +281,8 @@ const ClientView = {
           <div class="filter-sort-group">
             <span class="filter-label">Narx bo'yicha saralash</span>
             <select id="sort-select" class="filter-select">
-              <option value="asc">Saralash</option>
+              <option value="asc">Arzon → Qimmat</option>
               <option value="desc">Qimmat → Arzon</option>
-              <option value="asc_p">Arzon → Qimmat</option>
             </select>
           </div>
           <div class="filter-price-group">
@@ -326,23 +341,42 @@ const ClientView = {
   renderCarCard(car) {
     const isAvail = car.status === 'available';
     const category = car.category || 'Premium';
-    const priceUZS = (car.daily_rate * 100).toLocaleString('ru-RU');
+    const imageSrc = this.encodeAsset(car.image_url);
+    const videoSrc = this.carVideos[car.id] ? this.encodeAsset(this.carVideos[car.id]) : '';
+    let features = [];
+    try {
+      features = JSON.parse(car.features_json || '[]').slice(0, 3);
+    } catch (err) {
+      features = [];
+    }
 
     return `
-      <div class="car-card-new">
+      <div class="car-card car-card-new" data-car-id="${car.id}">
         <div class="car-img-wrap">
           <img
-            src="${car.image_url}"
+            src="${imageSrc}"
             alt="${car.make} ${car.model}"
             loading="lazy"
             onerror="this.src='https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80'"
           >
+          ${videoSrc ? `
+            <video muted loop playsinline preload="none" poster="${imageSrc}">
+              <source src="${videoSrc}" type="video/mp4">
+            </video>
+            <span class="car-media-badge">Video</span>
+          ` : ''}
           ${!isAvail ? '<div class="car-unavail-overlay"><span>Band</span></div>' : ''}
         </div>
         <div class="car-card-new-body">
           <span class="car-cat-label">${category.toUpperCase()}</span>
           <h3 class="car-title-new">${car.make} ${car.model}</h3>
-          <div class="car-price-new">${(car.daily_rate).toLocaleString('ru-RU')} <span>UZS</span></div>
+          <div class="car-meta-row">
+            <span class="car-meta-chip">${car.year}</span>
+            <span class="car-meta-chip">${car.transmission}</span>
+            <span class="car-meta-chip">${car.fuel_type}</span>
+            ${features.map(f => `<span class="car-meta-chip">${f}</span>`).join('')}
+          </div>
+          <div class="car-price-new">${(car.daily_rate).toLocaleString('ru-RU')} <span>UZS / kun</span></div>
           <div class="car-actions-new">
             <a class="btn-telegram-new" href="https://t.me/rentcar_uz" target="_blank">
               <i data-lucide="send" style="width:14px;height:14px;"></i>
@@ -730,7 +764,7 @@ const ClientView = {
     return bookings.map(b => `
       <div class="booking-item-card">
         <div style="display: flex; align-items: center; gap: 16px;">
-          <img src="${b.image_url}" alt="${b.make}" style="width: 70px; height: 50px; object-fit: cover; border-radius: var(--radius-sm);">
+          <img src="${this.encodeAsset(b.image_url)}" alt="${b.make}" style="width: 70px; height: 50px; object-fit: cover; border-radius: var(--radius-sm);">
           <div>
             <div style="font-weight: 700; font-size: 1.05rem;">${b.make} ${b.model} (${b.year})</div>
             <div style="font-size: 0.8rem; color: var(--text-muted);">Kod: <strong>${b.booking_code}</strong> • ${b.start_date} dan ${b.end_date} gacha</div>
@@ -847,6 +881,27 @@ const ClientView = {
         const carId = parseInt(btn.getAttribute('data-car-id'), 10);
         this.openBookingModal(carId);
       };
+    });
+    this.initCardVideos();
+  },
+
+  initCardVideos() {
+    document.querySelectorAll('.car-card-new').forEach(card => {
+      const video = card.querySelector('video');
+      if (!video) return;
+      const play = () => {
+        card.classList.add('is-playing');
+        video.play().catch(() => {});
+      };
+      const stop = () => {
+        card.classList.remove('is-playing');
+        video.pause();
+        video.currentTime = 0;
+      };
+      card.addEventListener('mouseenter', play);
+      card.addEventListener('mouseleave', stop);
+      card.addEventListener('focusin', play);
+      card.addEventListener('focusout', stop);
     });
   },
 
