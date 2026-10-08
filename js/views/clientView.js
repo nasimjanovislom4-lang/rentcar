@@ -357,6 +357,13 @@ const ClientView = {
           <!-- Dynamically filled by openBookingModal -->
         </div>
       </div>
+
+      <!-- Car Video Preview Modal -->
+      <div id="video-modal-overlay" class="modal-overlay">
+        <div class="video-modal-box" id="video-modal-content">
+          <!-- Dynamically filled by openVideoModal -->
+        </div>
+      </div>
     `;
   },
 
@@ -365,6 +372,7 @@ const ClientView = {
     const category = car.category || 'Premium';
     const imageSrc = this.encodeAsset(car.image_url);
     const videoSrc = this.getCarVideo(car);
+    const isLandscape = `${car.make || ''} ${car.model || ''}`.toLowerCase().includes('zeekr');
     let features = [];
     try {
       features = JSON.parse(car.features_json || '[]').slice(0, 3);
@@ -382,10 +390,12 @@ const ClientView = {
             onerror="this.src='https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80'"
           >
           ${videoSrc ? `
-            <video muted loop playsinline preload="none" poster="${imageSrc}">
+            <video muted loop playsinline preload="none" class="${isLandscape ? 'video-landscape' : ''}" poster="${imageSrc}">
               <source src="${videoSrc}" type="video/mp4">
             </video>
-            <span class="car-media-badge">Video</span>
+            <span class="car-media-badge" data-car-id="${car.id}">
+              <i data-lucide="play" style="width:11px;height:11px;"></i> Video
+            </span>
           ` : ''}
           ${!isAvail ? '<div class="car-unavail-overlay"><span>Band</span></div>' : ''}
         </div>
@@ -929,14 +939,71 @@ const ClientView = {
       if (badge) {
         badge.addEventListener('click', (e) => {
           e.stopPropagation();
-          if (card.classList.contains('is-playing')) {
-            stop();
-          } else {
-            play();
-          }
+          const carId = parseInt(card.getAttribute('data-car-id'), 10);
+          this.openVideoModal(carId);
         });
       }
     });
+  },
+
+  openVideoModal(carId) {
+    if (typeof DB === 'undefined') return;
+    const cars = DB.query("SELECT * FROM cars WHERE id = ?", [carId]);
+    if (!cars || cars.length === 0) return;
+    const car = cars[0];
+    const videoSrc = this.getCarVideo(car);
+    if (!videoSrc) return;
+
+    const overlay = document.getElementById('video-modal-overlay');
+    const content = document.getElementById('video-modal-content');
+    if (!overlay || !content) return;
+
+    content.innerHTML = `
+      <div class="video-modal-header">
+        <div>
+          <span class="car-cat-label" style="font-size: 0.72rem;">${(car.category || 'Avto').toUpperCase()}</span>
+          <h3 style="margin-top: 2px; font-size: 1.25rem;">${car.make} ${car.model} (${car.year})</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">${(car.daily_rate).toLocaleString()} UZS / kun</p>
+        </div>
+        <button class="modal-close-btn" id="btn-close-video-modal">✕</button>
+      </div>
+      <div class="video-modal-body">
+        <video controls autoplay playsinline class="video-modal-player" poster="${this.encodeAsset(car.image_url)}">
+          <source src="${videoSrc}" type="video/mp4">
+        </video>
+      </div>
+      <div class="video-modal-footer">
+        <button class="btn btn-secondary btn-sm" id="btn-close-video-modal-bottom">Yopish</button>
+        <button class="btn btn-primary btn-sm btn-book-from-video" data-car-id="${car.id}">
+          <i data-lucide="calendar" style="width:14px;height:14px;"></i> Band qilish
+        </button>
+      </div>
+    `;
+
+    overlay.classList.add('active');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    const close = () => {
+      const vid = content.querySelector('video');
+      if (vid) vid.pause();
+      overlay.classList.remove('active');
+    };
+
+    const closeBtn = document.getElementById('btn-close-video-modal');
+    if (closeBtn) closeBtn.onclick = close;
+    const closeBtn2 = document.getElementById('btn-close-video-modal-bottom');
+    if (closeBtn2) closeBtn2.onclick = close;
+    overlay.onclick = (e) => {
+      if (e.target === overlay) close();
+    };
+
+    const bookBtn = content.querySelector('.btn-book-from-video');
+    if (bookBtn) {
+      bookBtn.onclick = () => {
+        close();
+        this.openBookingModal(car.id);
+      };
+    }
   },
 
   initCancelButtons() {

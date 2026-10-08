@@ -292,24 +292,39 @@ body[data-role="client"] .hero-title .text-accent {
 .car-img-wrap {
   position: relative;
   width: 100%;
-  height: 214px;
+  height: 240px;
   overflow: hidden;
-  background: #ece7dc;
+  background: #0b1220;
 }
 
-.car-img-wrap img,
-.car-img-wrap video {
+.car-img-wrap img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.45s ease, opacity 0.3s ease;
+  transition: transform 0.45s ease, filter 0.35s ease;
 }
 
 .car-img-wrap video {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: transparent;
   opacity: 0;
   pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+/* Widescreen / monitor format video for Zeekr */
+.car-img-wrap video.video-landscape {
+  object-fit: cover;
+}
+
+.car-card.is-playing .car-img-wrap img,
+.car-card-new.is-playing .car-img-wrap img {
+  filter: blur(14px) brightness(0.42);
+  transform: scale(1.15);
 }
 
 .car-card.is-playing .car-img-wrap video,
@@ -327,16 +342,75 @@ body[data-role="client"] .hero-title .text-accent {
   top: 12px;
   right: 12px;
   z-index: 2;
-  background: rgba(11, 18, 32, 0.72);
+  background: rgba(11, 18, 32, 0.78);
+  backdrop-filter: blur(8px);
   color: #f6f3ec;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.04em;
-  padding: 5px 9px;
+  padding: 5px 11px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.car-media-badge:hover {
+  background: var(--accent-gold);
+  color: #0b1220;
+  transform: scale(1.06);
+}
+
+/* Video Preview Modal Styles */
+.video-modal-box {
+  background: #111a2e;
+  color: #f6f3ec;
+  border-radius: 20px;
+  max-width: 680px;
+  width: 92%;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  animation: modalScaleIn 0.25s ease-out;
+}
+
+.video-modal-header {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.video-modal-body {
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 68vh;
+  min-height: 280px;
+}
+
+.video-modal-player {
+  max-width: 100%;
+  max-height: 68vh;
+  width: auto;
+  height: auto;
+  display: block;
+}
+
+.video-modal-footer {
+  padding: 14px 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #0b1220;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .car-unavail-overlay {
