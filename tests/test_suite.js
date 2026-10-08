@@ -101,15 +101,67 @@ async function testAuthRoleSwitch() {
   if (typeof Auth === 'undefined') {
     throw new Error("Auth is not defined");
   }
-  Auth.switchRole('admin');
-  assert(Auth.getRole() === 'admin', "Current role should be admin");
-  Auth.switchRole('client');
-  assert(Auth.getRole() === 'client', "Current role should be client");
   
-  // Test blacklisted check
-  // User 5 Dilshod Raxmatov is blacklisted
-  assert(Auth.isBlacklisted(5) === true, "User 5 must be recognized as blacklisted");
-  assert(Auth.isBlacklisted(1) === false, "User 1 must not be blacklisted");
+  // 1. Admin login & RBAC permissions
+  const adminRes = Auth.login('admin', 'admin123');
+  assert(adminRes.success, "Admin login must succeed");
+  assert(Auth.getRole() === 'admin', "Current role should be admin");
+  assert(Auth.canAccess('dashboard') === true, "Admin should have access to dashboard");
+  assert(Auth.canAccess('fleet') === true, "Admin should have access to fleet");
+  assert(Auth.canAccess('crm') === true, "Admin should have access to crm");
+  assert(Auth.canAccess('reports') === true, "Admin should have access to reports");
+
+  // 2. Manager login & RBAC permissions
+  const mgrRes = Auth.login('manager', 'manager123');
+  assert(mgrRes.success, "Manager login must succeed");
+  assert(Auth.getRole() === 'manager', "Current role should be manager");
+  assert(Auth.canAccess('dashboard') === true, "Manager should have access to dashboard");
+  assert(Auth.canAccess('fleet') === true, "Manager should have access to fleet");
+  assert(Auth.canAccess('reports') === false, "Manager must NOT have access to reports/finance");
+  assert(Auth.canAccess('crm') === false, "Manager must NOT have access to crm");
+
+  // 3. Client login & RBAC permissions
+  const clientRes = Auth.login('client', 'client123');
+  assert(clientRes.success, "Client login must succeed");
+  assert(Auth.getRole() === 'client', "Current role should be client");
+  assert(Auth.canAccess('client') === true, "Client should access catalog");
+  assert(Auth.canAccess('my-bookings') === true, "Client should access my bookings");
+  assert(Auth.canAccess('dashboard') === false, "Client must NOT access dashboard");
+  assert(Auth.canAccess('fleet') === false, "Client must NOT access fleet");
+
+  // 4. Invalid credentials & blacklisted user
+  const badPassRes = Auth.login('admin', 'wrong_pass');
+  assert(badPassRes.success === false, "Wrong password must be rejected");
+
+  const blackRes = Auth.login('dilshod', 'dilshod123');
+  assert(blackRes.success === false, "Blacklisted user must be prevented from logging in");
+
+  // 5. Register new client
+  const newUsername = 'client_' + Date.now();
+  const regRes = Auth.register({
+    full_name: "Yangi Mijoz",
+    phone: "+99899" + Math.floor(1000000 + Math.random() * 9000000),
+    username: newUsername,
+    password: "secure123"
+  });
+  assert(regRes.success, "Registering a new client must succeed");
+  assert(regRes.user.role === 'client', "New registered user must have role client");
+
+  // 6. Logout
+  Auth.logout();
+  assert(Auth.isAuthenticated() === false, "After logout, user must not be authenticated");
+  assert(Auth.getRole() === 'client', "Role should default to client after logout");
+
+  // 7. Verify index.html & styles.css
+  if (isNode) {
+    const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+    assert(indexHtml.includes('auth-navbar-area'), "index.html must include auth-navbar-area");
+    assert(indexHtml.includes('auth-modal-overlay'), "index.html must include auth-modal-overlay");
+
+    const stylesCss = fs.readFileSync(path.join(__dirname, '../css/styles.css'), 'utf8');
+    assert(stylesCss.includes('.auth-navbar-area'), "styles.css must style .auth-navbar-area");
+    assert(stylesCss.includes('.auth-modal-box'), "styles.css must style .auth-modal-box");
+  }
 }
 
 async function testCarFiltering() {

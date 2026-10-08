@@ -7,6 +7,8 @@ const SCHEMA = {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       full_name TEXT NOT NULL,
       phone TEXT UNIQUE NOT NULL,
+      username TEXT UNIQUE,
+      password TEXT,
       role TEXT CHECK(role IN ('client', 'manager', 'admin')) DEFAULT 'client',
       passport_no TEXT,
       license_no TEXT,
@@ -78,12 +80,12 @@ const SCHEMA = {
 
   seedSql: `
     -- Users
-    INSERT INTO users (id, full_name, phone, role, passport_no, license_no, status) VALUES
-    (1, 'Alisher Komilov', '+998901234567', 'admin', 'AA1234567', 'AB9876543', 'active'),
-    (2, 'Rustam Shokirov', '+998907654321', 'manager', 'AB2345678', 'BC8765432', 'active'),
-    (3, 'Jasur Bekmirzayev', '+998912345678', 'client', 'AC3456789', 'CD7654321', 'active'),
-    (4, 'Sanjar Qodirov', '+998935554433', 'client', 'AD4567890', 'DE6543210', 'active'),
-    (5, 'Dilshod Raxmatov', '+998971112233', 'client', 'AE5678901', 'EF5432109', 'blacklisted');
+    INSERT INTO users (id, full_name, phone, username, password, role, passport_no, license_no, status) VALUES
+    (1, 'Alisher Komilov', '+998901234567', 'admin', 'admin123', 'admin', 'AA1234567', 'AB9876543', 'active'),
+    (2, 'Rustam Shokirov', '+998907654321', 'manager', 'manager123', 'manager', 'AB2345678', 'BC8765432', 'active'),
+    (3, 'Jasur Bekmirzayev', '+998912345678', 'client', 'client123', 'client', 'AC3456789', 'CD7654321', 'active'),
+    (4, 'Sanjar Qodirov', '+998935554433', 'sanjar', 'sanjar123', 'client', 'AD4567890', 'DE6543210', 'active'),
+    (5, 'Dilshod Raxmatov', '+998971112233', 'dilshod', 'dilshod123', 'client', 'AE5678901', 'EF5432109', 'blacklisted');
 
     -- Cars
     INSERT INTO cars (id, make, model, year, category, transmission, fuel_type, seats, daily_rate, deposit_amount, status, mileage, plate_number, image_url, features_json) VALUES

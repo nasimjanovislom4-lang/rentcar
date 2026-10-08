@@ -1,5 +1,5 @@
 // js/app.js
-// Main Application Controller, Router, and UI Orchestrator
+// Main Application Controller, Router, and RBAC UI Orchestrator
 
 const isNodeApp = typeof window === 'undefined';
 
@@ -16,17 +16,28 @@ const App = {
         Auth.init();
       }
 
-      this.initRoleSwitcher();
+      this.initNavbarBrand();
+      this.updateAuthNavbar();
       this.updateNavbar();
 
       const role = typeof Auth !== 'undefined' ? Auth.getRole() : 'client';
       this.applyRoleTheme(role);
-      this.navigate(role === 'client' ? 'client' : 'dashboard');
 
-      // Listen to role changes
+      // Route initial view based on role and auth
+      if (typeof Auth !== 'undefined' && Auth.isAuthenticated() && ['admin', 'manager'].includes(role)) {
+        this.navigate('dashboard');
+      } else {
+        this.navigate('client');
+      }
+
+      // Listen to auth and role changes
       if (!isNodeApp && window.addEventListener) {
         window.addEventListener('rentcar:role-changed', (e) => {
           this.handleRoleChange(e.detail.role);
+        });
+        window.addEventListener('rentcar:auth-changed', () => {
+          this.updateAuthNavbar();
+          this.updateNavbar();
         });
       }
 
@@ -56,33 +67,22 @@ const App = {
 
   handleRoleChange(newRole) {
     this.applyRoleTheme(newRole);
-    this.updateRoleButtons(newRole);
+    this.updateAuthNavbar();
     this.updateNavbar();
-    if (newRole === 'client') {
-      this.navigate('client');
-    } else {
-      this.navigate('dashboard');
-    }
-    this.showToast(`Rol o'zgartirildi: ${newRole.toUpperCase()}`, 'info');
   },
 
-  initRoleSwitcher() {
+  initNavbarBrand() {
     const brandLogo = document.getElementById('brand-logo');
     if (brandLogo) {
       brandLogo.onclick = () => {
         const role = typeof Auth !== 'undefined' ? Auth.getRole() : 'client';
-        this.navigate(role === 'client' ? 'client' : 'dashboard');
-      };
-    }
-
-    document.querySelectorAll('.role-btn').forEach(btn => {
-      btn.onclick = () => {
-        const role = btn.getAttribute('data-role');
-        if (typeof Auth !== 'undefined') {
-          Auth.switchRole(role);
+        if (['admin', 'manager'].includes(role)) {
+          this.navigate('dashboard');
+        } else {
+          this.navigate('client');
         }
       };
-    });
+    }
 
     const navToggle = document.getElementById('nav-toggle');
     const navLinks = document.getElementById('main-nav-links');
@@ -93,14 +93,254 @@ const App = {
     }
   },
 
-  updateRoleButtons(activeRole) {
-    document.querySelectorAll('.role-btn').forEach(btn => {
-      if (btn.getAttribute('data-role') === activeRole) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
+  updateAuthNavbar() {
+    const authArea = document.getElementById('auth-navbar-area');
+    if (!authArea) return;
+
+    const isAuth = typeof Auth !== 'undefined' && Auth.isAuthenticated();
+    const user = isAuth ? Auth.getCurrentUser() : null;
+
+    if (isAuth && user) {
+      const roleLabel = user.role === 'admin' ? '🛡️ Admin' : (user.role === 'manager' ? '💼 Menejer' : '👤 Mijoz');
+      authArea.innerHTML = `
+        <div class="user-auth-badge">
+          <span class="user-role-pill role-${user.role}">${roleLabel}</span>
+          <span class="user-name-text" title="${user.full_name}">${user.full_name}</span>
+          <button class="btn-logout-nav" id="btn-navbar-logout" title="Tizimdan chiqish">🚪 Chiqish</button>
+        </div>
+      `;
+
+      const logoutBtn = document.getElementById('btn-navbar-logout');
+      if (logoutBtn) {
+        logoutBtn.onclick = () => {
+          Auth.logout();
+          this.navigate('client');
+          this.showToast("Tizimdan muvaffaqiyatli chiqdingiz", "info");
+        };
       }
-    });
+    } else {
+      authArea.innerHTML = `
+        <button class="btn btn-sm btn-primary" id="btn-open-auth-modal" style="gap: 6px; padding: 7px 16px;">
+          <span>🔑</span> Kirish
+        </button>
+      `;
+
+      const loginBtn = document.getElementById('btn-open-auth-modal');
+      if (loginBtn) {
+        loginBtn.onclick = () => this.openAuthModal('login');
+      }
+    }
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  },
+
+  openAuthModal(defaultTab = 'login') {
+    const overlay = document.getElementById('auth-modal-overlay');
+    const content = document.getElementById('auth-modal-content');
+    if (!overlay || !content) return;
+
+    let activeTab = defaultTab;
+
+    const renderModal = () => {
+      content.innerHTML = `
+        <div class="modal-header">
+          <div>
+            <h2 style="font-size: 1.25rem; margin-bottom: 4px; color: #ffffff;">RentCar Tizimiga Kirish</h2>
+            <p style="font-size: 0.8rem; color: #94a3b8; margin: 0;">Rolga asoslangan RBAC xavfsiz boshqaruv</p>
+          </div>
+          <button class="modal-close-btn" id="btn-close-auth-modal">✕</button>
+        </div>
+
+        <div class="auth-tabs-row">
+          <button type="button" class="auth-tab-btn ${activeTab === 'login' ? 'active' : ''}" id="tab-btn-login">
+            🔑 Kirish
+          </button>
+          <button type="button" class="auth-tab-btn ${activeTab === 'register' ? 'active' : ''}" id="tab-btn-register">
+            📝 Ro'yxatdan o'tish
+          </button>
+        </div>
+
+        ${activeTab === 'login' ? `
+          <!-- Login Form -->
+          <form id="form-auth-login" onsubmit="return false;">
+            <div class="form-group">
+              <label class="form-label">Login (Foydalanuvchi nomi yoki Telefon) *</label>
+              <input type="text" id="auth-login-user" class="form-input" placeholder="admin, manager yoki +998..." required autocomplete="username">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Parol *</label>
+              <input type="password" id="auth-login-pass" class="form-input" placeholder="Parolingizni kiriting" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btn-submit-auth-login" style="width: 100%; margin-top: 8px; padding: 11px;">
+              Tizimga Kirish →
+            </button>
+          </form>
+
+          <!-- Quick Demo Logins -->
+          <div class="auth-demo-box">
+            <div class="auth-demo-label">Sinash uchun tezkor kirish (1 bosishda):</div>
+            <div class="auth-demo-chips">
+              <button type="button" class="btn-demo-chip" data-demo-user="admin" data-demo-pass="admin123">
+                <span>🛡️ Admin sifatida</span>
+                <span class="chip-creds">admin / admin123</span>
+              </button>
+              <button type="button" class="btn-demo-chip" data-demo-user="manager" data-demo-pass="manager123">
+                <span>💼 Menejer sifatida</span>
+                <span class="chip-creds">manager / manager123</span>
+              </button>
+              <button type="button" class="btn-demo-chip" data-demo-user="client" data-demo-pass="client123">
+                <span>👤 Mijoz sifatida</span>
+                <span class="chip-creds">client / client123</span>
+              </button>
+            </div>
+          </div>
+        ` : `
+          <!-- Register Form -->
+          <form id="form-auth-register" onsubmit="return false;">
+            <div class="form-group">
+              <label class="form-label">To'liq Ism-Familiyangiz *</label>
+              <input type="text" id="auth-reg-name" class="form-input" placeholder="Masalan: Bekzod Rahimov" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="form-group">
+                <label class="form-label">Login (Username) *</label>
+                <input type="text" id="auth-reg-user" class="form-input" placeholder="bekzod_01" required autocomplete="username">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Telefon *</label>
+                <input type="tel" id="auth-reg-phone" class="form-input" placeholder="+998901234567" required autocomplete="tel">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Parol *</label>
+              <input type="password" id="auth-reg-pass" class="form-input" placeholder="Yangi parol" required autocomplete="new-password">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="form-group">
+                <label class="form-label">Pasport / ID (ixtiyoriy)</label>
+                <input type="text" id="auth-reg-passport" class="form-input" placeholder="AA1234567">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Prava raqami (ixtiyoriy)</label>
+                <input type="text" id="auth-reg-license" class="form-input" placeholder="AB9876543">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btn-submit-auth-register" style="width: 100%; margin-top: 8px; padding: 11px;">
+              Ro'yxatdan O'tish va Kirish →
+            </button>
+          </form>
+        `}
+      `;
+
+      // Close modal
+      const closeBtn = document.getElementById('btn-close-auth-modal');
+      if (closeBtn) closeBtn.onclick = () => this.closeAuthModal();
+
+      // Tab switcher
+      const tabLogin = document.getElementById('tab-btn-login');
+      const tabRegister = document.getElementById('tab-btn-register');
+      if (tabLogin) {
+        tabLogin.onclick = () => {
+          activeTab = 'login';
+          renderModal();
+        };
+      }
+      if (tabRegister) {
+        tabRegister.onclick = () => {
+          activeTab = 'register';
+          renderModal();
+        };
+      }
+
+      // Demo quick-logins
+      document.querySelectorAll('.btn-demo-chip').forEach(btn => {
+        btn.onclick = () => {
+          const u = btn.getAttribute('data-demo-user');
+          const p = btn.getAttribute('data-demo-pass');
+          this.executeLogin(u, p);
+        };
+      });
+
+      // Handle Login submit
+      const loginForm = document.getElementById('form-auth-login');
+      if (loginForm) {
+        loginForm.onsubmit = (e) => {
+          e.preventDefault();
+          const u = document.getElementById('auth-login-user').value.trim();
+          const p = document.getElementById('auth-login-pass').value;
+          this.executeLogin(u, p);
+        };
+      }
+
+      // Handle Register submit
+      const regForm = document.getElementById('form-auth-register');
+      if (regForm) {
+        regForm.onsubmit = (e) => {
+          e.preventDefault();
+          const name = document.getElementById('auth-reg-name').value.trim();
+          const username = document.getElementById('auth-reg-user').value.trim();
+          const phone = document.getElementById('auth-reg-phone').value.trim();
+          const password = document.getElementById('auth-reg-pass').value;
+          const passport = document.getElementById('auth-reg-passport').value.trim();
+          const license = document.getElementById('auth-reg-license').value.trim();
+
+          const result = Auth.register({
+            full_name: name,
+            username,
+            phone,
+            password,
+            passport_no: passport,
+            license_no: license
+          });
+
+          if (result.success) {
+            this.closeAuthModal();
+            this.navigate('client');
+            this.showToast(`Ro'yxatdan o'tish muvaffaqiyatli! Xush kelibsiz, ${result.user.full_name}`, "success");
+          } else {
+            this.showToast(result.error || "Ro'yxatdan o'tishda xatolik", "error");
+          }
+        };
+      }
+    };
+
+    renderModal();
+    overlay.classList.add('active');
+  },
+
+  executeLogin(username, password) {
+    if (typeof Auth === 'undefined') return;
+    const res = Auth.login(username, password);
+
+    if (res.success) {
+      this.closeAuthModal();
+      const user = res.user;
+
+      // Role-based automatic redirection
+      if (user.role === 'admin') {
+        this.navigate('dashboard');
+        this.showToast(`Xush kelibsiz, Admin ${user.full_name}!`, "success");
+      } else if (user.role === 'manager') {
+        this.navigate('dashboard');
+        this.showToast(`Xush kelibsiz, Menejer ${user.full_name}!`, "success");
+      } else {
+        this.navigate('client');
+        this.showToast(`Xush kelibsiz, ${user.full_name}!`, "success");
+      }
+    } else {
+      this.showToast(res.error || "Login yoki parol noto'g'ri", "error");
+    }
+  },
+
+  closeAuthModal() {
+    const overlay = document.getElementById('auth-modal-overlay');
+    if (overlay) overlay.classList.remove('active');
   },
 
   updateNavbar() {
@@ -128,10 +368,10 @@ const App = {
         <span class="nav-item ${this.currentView === 'bookings' ? 'active' : ''}" data-nav="bookings">
           <i data-lucide="clipboard-list" style="width:15px;height:15px;"></i> Buyurtmalar
         </span>
-        <span class="nav-item ${this.currentView === 'crm' ? 'active' : ''}" data-nav="crm">
-          <i data-lucide="users" style="width:15px;height:15px;"></i> Mijozlar (CRM)
-        </span>
         ${role === 'admin' ? `
+          <span class="nav-item ${this.currentView === 'crm' ? 'active' : ''}" data-nav="crm">
+            <i data-lucide="users" style="width:15px;height:15px;"></i> Mijozlar (CRM)
+          </span>
           <span class="nav-item ${this.currentView === 'reports' ? 'active' : ''}" data-nav="reports">
             <i data-lucide="wallet" style="width:15px;height:15px;"></i> Moliya & Baza
           </span>
@@ -147,11 +387,25 @@ const App = {
       };
     });
 
-    // Re-render Lucide icons
     if (typeof lucide !== 'undefined') lucide.createIcons();
   },
 
   navigate(viewName) {
+    // RBAC Route Guarding
+    if (typeof Auth !== 'undefined') {
+      const canAccess = Auth.canAccess(viewName);
+      if (!canAccess) {
+        if (!Auth.isAuthenticated()) {
+          this.showToast("Ushbu bo'limga kirish uchun avval tizimga kiring", "warning");
+          this.openAuthModal('login');
+          return;
+        } else {
+          this.showToast("Kechirasiz, sizning rolingizda ushbu sahifaga ruxsat yo'q", "error");
+          return;
+        }
+      }
+    }
+
     this.currentView = viewName;
     const viewport = document.getElementById('app-viewport');
     if (!viewport) return;
@@ -159,9 +413,10 @@ const App = {
     const role = typeof Auth !== 'undefined' ? Auth.getRole() : 'client';
     this.applyRoleTheme(role);
     this.updateNavbar();
+    this.updateAuthNavbar();
 
     // 1. Client Views
-    if (role === 'client') {
+    if (role === 'client' || viewName === 'client' || viewName === 'my-bookings') {
       if (typeof ClientView === 'undefined') return;
 
       viewport.innerHTML = ClientView.render();
@@ -195,11 +450,22 @@ const App = {
       subViewContent = ReportsView.render();
     }
 
+    const currentUser = (typeof Auth !== 'undefined') ? Auth.getCurrentUser() : null;
+    const userName = currentUser ? currentUser.full_name : 'Foydalanuvchi';
+
     viewport.innerHTML = `
       <div class="admin-layout">
         <!-- Sidebar Navigation -->
         <aside class="admin-sidebar">
-          <div class="sidebar-heading">Boshqaruv Tizimi (${role.toUpperCase()})</div>
+          <div style="padding: 12px 14px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Tizim Foydalanuvchisi</div>
+            <div style="font-weight: 800; color: #ffffff; font-size: 0.95rem; margin-top: 2px;">${userName}</div>
+            <div style="font-size: 0.75rem; color: ${role === 'admin' ? '#34d399' : '#38bdf8'}; font-weight: 700; margin-top: 2px;">
+              ${role === 'admin' ? '🛡️ Administrator' : '💼 Menejer'}
+            </div>
+          </div>
+
+          <div class="sidebar-heading">Boshqaruv Bo'limlari</div>
           
           <div class="sidebar-link ${activeSubView === 'dashboard' ? 'active' : ''}" data-admin-view="dashboard">
             <span class="link-icon"><i data-lucide="bar-chart-2" style="width:17px;height:17px;"></i></span>
@@ -216,24 +482,24 @@ const App = {
             <span>Buyurtmalar & Aktlar</span>
           </div>
 
-          <div class="sidebar-link ${activeSubView === 'crm' ? 'active' : ''}" data-admin-view="crm">
-            <span class="link-icon"><i data-lucide="users" style="width:17px;height:17px;"></i></span>
-            <span>Mijozlar & Blacklist</span>
-          </div>
-
           ${role === 'admin' ? `
+            <div class="sidebar-link ${activeSubView === 'crm' ? 'active' : ''}" data-admin-view="crm">
+              <span class="link-icon"><i data-lucide="users" style="width:17px;height:17px;"></i></span>
+              <span>Mijozlar & Blacklist</span>
+            </div>
+
             <div class="sidebar-link ${activeSubView === 'reports' ? 'active' : ''}" data-admin-view="reports">
               <span class="link-icon"><i data-lucide="wallet" style="width:17px;height:17px;"></i></span>
               <span>Moliya & SQLite Baza</span>
             </div>
           ` : ''}
 
-          <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border-color);">
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px;">
-              Tizim holati: <strong class="text-emerald">SQLite WASM Faol</strong>
-            </div>
-            <button class="btn btn-secondary btn-sm" id="btn-sidebar-view-client" style="width: 100%; gap: 6px;">
-              <i data-lucide="globe" style="width:14px;height:14px;"></i> Mijoz Saytiga O'tish
+          <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px;">
+            <button class="btn btn-secondary btn-sm" id="btn-sidebar-view-client" style="width: 100%; justify-content: center; gap: 6px;">
+              <i data-lucide="globe" style="width:14px;height:14px;"></i> Mijoz Sahifasini Ko'rish
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btn-sidebar-logout" style="width: 100%; justify-content: center; gap: 6px; color: var(--accent-rose);">
+              <span>🚪</span> Tizimdan Chiqish
             </button>
           </div>
         </aside>
@@ -266,17 +532,23 @@ const App = {
       };
     });
 
-    // Re-render Lucide icons after DOM update
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-
     const clientBtn = document.getElementById('btn-sidebar-view-client');
     if (clientBtn) {
       clientBtn.onclick = () => {
-        if (typeof Auth !== 'undefined') {
-          Auth.switchRole('client');
-        }
+        this.navigate('client');
       };
     }
+
+    const sidebarLogoutBtn = document.getElementById('btn-sidebar-logout');
+    if (sidebarLogoutBtn) {
+      sidebarLogoutBtn.onclick = () => {
+        Auth.logout();
+        this.navigate('client');
+        this.showToast("Tizimdan chiqdingiz", "info");
+      };
+    }
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   },
 
   showToast(message, type = 'info') {

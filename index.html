@@ -49,16 +49,8 @@
         UZ
       </div>
 
-      <div class="role-badge-box" id="role-switcher-box" title="Foydalanuvchi rolini o'zgartirish">
-        <button class="role-btn active" data-role="client" id="role-btn-client">
-          <i data-lucide="user" style="width:13px;height:13px;"></i> Mijoz
-        </button>
-        <button class="role-btn" data-role="manager" id="role-btn-manager">
-          <i data-lucide="briefcase" style="width:13px;height:13px;"></i> Menejer
-        </button>
-        <button class="role-btn" data-role="admin" id="role-btn-admin">
-          <i data-lucide="shield-check" style="width:13px;height:13px;"></i> Admin
-        </button>
+      <div class="auth-navbar-area" id="auth-navbar-area">
+        <!-- Rendered dynamically by App.updateAuthNavbar() -->
       </div>
     </div>
   </header>
@@ -71,6 +63,11 @@
       <p>SQLite WebAssembly bazasi va modullar initsializatsiya qilinmoqda.</p>
     </div>
   </main>
+
+  <!-- Unified Auth Modal (Login & Register) -->
+  <div class="modal-overlay" id="auth-modal-overlay">
+    <div class="modal-box auth-modal-box" id="auth-modal-content"></div>
+  </div>
 
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container"></div>

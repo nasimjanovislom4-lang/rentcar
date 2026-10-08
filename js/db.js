@@ -131,6 +131,28 @@ const DB = {
       migrated = migrated || this.dbInstance.getRowsModified() > 0;
     });
 
+    // 5. Ensure username and password columns exist in users table
+    try {
+      const userCols = this.query("PRAGMA table_info(users)");
+      const colNames = userCols.map(c => c.name);
+      if (!colNames.includes('username')) {
+        this.dbInstance.run("ALTER TABLE users ADD COLUMN username TEXT");
+        migrated = true;
+      }
+      if (!colNames.includes('password')) {
+        this.dbInstance.run("ALTER TABLE users ADD COLUMN password TEXT");
+        migrated = true;
+      }
+
+      // Update default usernames and passwords if null
+      this.dbInstance.run("UPDATE users SET username = 'admin', password = 'admin123' WHERE role = 'admin' AND (username IS NULL OR username = '')");
+      this.dbInstance.run("UPDATE users SET username = 'manager', password = 'manager123' WHERE role = 'manager' AND (username IS NULL OR username = '')");
+      this.dbInstance.run("UPDATE users SET username = 'client', password = 'client123' WHERE role = 'client' AND id = 3 AND (username IS NULL OR username = '')");
+      this.dbInstance.run("UPDATE users SET password = '123' WHERE password IS NULL OR password = ''");
+    } catch (e) {
+      console.warn("User RBAC columns migration warning:", e);
+    }
+
     return migrated;
   },
 
