@@ -713,6 +713,288 @@ body[data-role="client"] .modal-box .form-input:focus {
   color: #94a3b8 !important;
 }
 
+/* ====================================================
+   Virtual Company Payment Card Styling
+   ==================================================== */
+.company-card-box {
+  margin-top: 16px;
+  background: linear-gradient(135deg, #182848 0%, #0d172b 100%);
+  border: 1px solid rgba(196, 163, 90, 0.45);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.company-card-box::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(196, 163, 90, 0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.company-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.company-card-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.card-brand-name {
+  letter-spacing: 0.5px;
+}
+
+.card-system-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.company-card-label {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 600;
+}
+
+.company-card-number-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  margin-bottom: 14px;
+}
+
+.company-card-digits {
+  font-family: 'SF Mono', 'Courier New', Courier, monospace;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #ffffff;
+  user-select: all;
+}
+
+.btn-copy-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent-gradient);
+  color: #1a1408;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-copy-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(196, 163, 90, 0.35);
+}
+
+.btn-copy-card.copied {
+  background: #10b981 !important;
+  color: #ffffff !important;
+}
+
+.company-card-footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+  margin-bottom: 12px;
+}
+
+.card-info-sub {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.card-info-val {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.card-info-val.text-emerald {
+  color: #34d399 !important;
+  font-size: 1.1rem;
+}
+
+.payment-instruction-box {
+  background: rgba(15, 23, 42, 0.45);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.instruction-step {
+  font-size: 0.78rem;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+.instruction-step strong {
+  color: #ffffff;
+}
+
+.cash-payment-box {
+  background: #18253c;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 14px;
+  color: #ffffff;
+}
+
+/* ====================================================
+   SMS Notification Confirmation Card
+   ==================================================== */
+.sms-notification-card {
+  background: linear-gradient(145deg, #16243b 0%, #0f1827 100%);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 14px;
+  padding: 16px;
+  text-align: left;
+  margin: 16px 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.sms-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sms-sender {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sms-badge-icon {
+  font-size: 1.4rem;
+}
+
+.sms-sender-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+.sms-sender-sub {
+  font-size: 0.74rem;
+  color: #94a3b8;
+}
+
+.sms-time-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.sms-body {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #f1f5f9;
+  background: rgba(15, 23, 42, 0.5);
+  padding: 12px 14px;
+  border-radius: 10px;
+  border-left: 3px solid #38bdf8;
+  margin-bottom: 12px;
+  font-style: italic;
+}
+
+.sms-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sms-code-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sms-code-label {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.sms-code-val {
+  font-family: 'SF Mono', 'Courier New', Courier, monospace;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #34d399;
+  letter-spacing: 1px;
+}
+
+.btn-copy-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-copy-code:hover {
+  background: rgba(56, 189, 248, 0.3);
+  color: #ffffff;
+}
+
 @media (max-width: 800px) {
   .hero-search-box,
   .catalog-filter-bar {

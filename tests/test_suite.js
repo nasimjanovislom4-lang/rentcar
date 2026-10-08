@@ -322,6 +322,28 @@ async function testMercedesRemovedAndVideosMappedByName() {
   assert(ClientView.getCarVideo({ make: 'Zeekr', model: '9X Sport' }).toLowerCase().includes('zeekr'), "Zeekr video must match by name");
 }
 
+async function testCompanyPaymentCardAndSmsNotification() {
+  assert(ClientView.companyCard, "ClientView must have companyCard configuration");
+  assert(ClientView.companyCard.number === '8600 5500 1234 9012', "Company card number must be 8600 5500 1234 9012");
+  assert(ClientView.companyCard.rawNumber === '8600550012349012', "Company card rawNumber must be 16 digits");
+  assert(ClientView.companyCard.holder.includes('RENTCAR'), "Company card holder must be RENTCAR AVTO MCHJ");
+
+  assert(typeof ClientView.generateSmsText === 'function', "generateSmsText must be a function");
+  const sampleSms = ClientView.generateSmsText("Islombek", "Chevrolet Gentra", 450000, "RC-2026-7890");
+  assert(sampleSms.includes("Islombek"), "SMS text must include user name");
+  assert(sampleSms.includes("Chevrolet Gentra"), "SMS text must include car name");
+  assert(sampleSms.includes("450"), "SMS text must include payment amount");
+  assert(sampleSms.includes("RC-2026-7890"), "SMS text must include booking confirmation code");
+
+  if (isNode) {
+    const clientCss = fs.readFileSync(path.join(__dirname, '../css/client.css'), 'utf8');
+    assert(clientCss.includes('.company-card-box'), "client.css must style .company-card-box");
+    assert(clientCss.includes('.btn-copy-card'), "client.css must style .btn-copy-card");
+    assert(clientCss.includes('.sms-notification-card'), "client.css must style .sms-notification-card");
+    assert(clientCss.includes('.btn-copy-code'), "client.css must style .btn-copy-code");
+  }
+}
+
 async function runAll() {
   console.log("=== RentCar Test Suite ===");
   await runTest("testDbInitialization", testDbInitialization);
@@ -339,6 +361,7 @@ async function runAll() {
   await runTest("testFinancialSummaryAndExport", testFinancialSummaryAndExport);
   await runTest("testAppRouter", testAppRouter);
   await runTest("testMercedesRemovedAndVideosMappedByName", testMercedesRemovedAndVideosMappedByName);
+  await runTest("testCompanyPaymentCardAndSmsNotification", testCompanyPaymentCardAndSmsNotification);
   
   const passed = testResults.filter(r => r.status === 'PASS').length;
   const total = testResults.length;

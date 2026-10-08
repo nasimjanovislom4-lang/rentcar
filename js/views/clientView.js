@@ -49,6 +49,18 @@ const ClientView = {
     'zeekr': 'assets/video/zeekr 9X.mp4'
   },
 
+  companyCard: {
+    number: '8600 5500 1234 9012',
+    rawNumber: '8600550012349012',
+    holder: 'RENTCAR AVTO MCHJ',
+    bank: "O'zmilliybank (NBU)"
+  },
+
+  generateSmsText(userName, carName, totalAmount, bookingCode) {
+    const formattedAmount = (totalAmount || 0).toLocaleString('ru-RU');
+    return `Hurmatli ${userName || 'Mijoz'}! ${carName} uchun ${formattedAmount} so'm to'lovingiz qabul qilindi. Tasdiqlash kodi: ${bookingCode}. Mashinani qabul qilishda ushbu kodni taqdim eting. Tel: +998 71 200-01-01`;
+  },
+
   getCarVideo(car) {
     if (!car) return '';
     if (car.video_url) return this.encodeAsset(car.video_url);
@@ -595,7 +607,7 @@ const ClientView = {
             <div style="font-size: 0.75rem; color: var(--text-muted);">Kartadan to'lov</div>
           </div>
           <div class="payment-option-card ${this.wizardData.paymentMethod === 'uzum' ? 'selected' : ''}" data-pay="uzum">
-            <div style="color: #7000ff; font-size: 1.2rem; margin-bottom: 4px;">🍇 Uzum Pay</div>
+            <div style="color: #a855f7; font-size: 1.2rem; margin-bottom: 4px;">🍇 Uzum Pay</div>
             <div style="font-size: 0.75rem; color: var(--text-muted);">Uzum bank / kartalar</div>
           </div>
           <div class="payment-option-card ${this.wizardData.paymentMethod === 'cash' ? 'selected' : ''}" data-pay="cash">
@@ -604,14 +616,68 @@ const ClientView = {
           </div>
         </div>
 
-        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 14px; margin-top: 14px;">
-          <div style="font-weight: 700; color: #34d399; margin-bottom: 4px;">To'lov summasi: ${(calc.totalAmount).toLocaleString()} so'm</div>
-          <div style="font-size: 0.8rem; color: var(--text-secondary);">Garov depoziti (${(car.deposit_amount).toLocaleString()} so'm) avtomobilni topshirish vaqtida bloklanadi va toza holatda qaytarilganda bekor qilinadi.</div>
+        ${this.wizardData.paymentMethod !== 'cash' ? `
+          <!-- Virtual Company Payment Card Box -->
+          <div class="company-card-box">
+            <div class="company-card-top">
+              <div class="company-card-chip">
+                <span class="chip-graphic">💳</span>
+                <span class="card-brand-name">${this.companyCard.bank}</span>
+              </div>
+              <span class="card-system-badge">UZCARD • HUMO</span>
+            </div>
+
+            <div class="company-card-label">Kompaniyaning rasmiy to'lov kartasi:</div>
+            <div class="company-card-number-row">
+              <span class="company-card-digits" id="company-card-number-display">${this.companyCard.number}</span>
+              <button type="button" class="btn-copy-card" id="btn-copy-card" title="Karta raqamidan nusxa olish">
+                <span class="copy-icon">📋</span>
+                <span class="copy-label">Nusxa olish</span>
+              </button>
+            </div>
+
+            <div class="company-card-footer">
+              <div>
+                <div class="card-info-sub">Qabul qiluvchi:</div>
+                <div class="card-info-val">${this.companyCard.holder}</div>
+              </div>
+              <div style="text-align: right;">
+                <div class="card-info-sub">To'lov summasi:</div>
+                <div class="card-info-val text-emerald">${(calc.totalAmount).toLocaleString('ru-RU')} UZS</div>
+              </div>
+            </div>
+
+            <div class="payment-instruction-box">
+              <div class="instruction-step">1. <strong>Nusxa olish</strong> tugmasini bosing va <strong>${this.wizardData.paymentMethod.toUpperCase()}</strong> ilovangiz orqali to'lovni bajaring.</div>
+              <div class="instruction-step">2. To'lovni amalga oshirgach, pastdagi <strong>"To'lov qildim va Tasdiqlash"</strong> tugmasini bosing.</div>
+              <div class="instruction-step">3. Tizim to'lovni qayd etib, <strong>summa va tasdiqlash kodi</strong> bilan SMS xabarnoma taqdim etadi.</div>
+            </div>
+          </div>
+        ` : `
+          <div class="cash-payment-box">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+              <span style="font-size: 1.8rem;">💵</span>
+              <div>
+                <div style="font-weight: 700; color: #ffffff; font-size: 1.05rem;">Joyida naqd to'lash</div>
+                <div style="font-size: 0.85rem; color: #94a3b8;">Avtomobilni qabul qilib olayotganda kassaga to'lov qilasiz</div>
+              </div>
+            </div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: #34d399; margin-top: 8px;">
+              To'lanadigan summa: ${(calc.totalAmount).toLocaleString('ru-RU')} so'm
+            </div>
+          </div>
+        `}
+
+        <div class="deposit-notice-box" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 14px; margin-top: 14px;">
+          <div style="font-weight: 700; color: #34d399; margin-bottom: 4px;">To'lov summasi: ${(calc.totalAmount).toLocaleString('ru-RU')} so'm</div>
+          <div style="font-size: 0.8rem; color: #cbd5e1;">Garov depoziti (${(car.deposit_amount).toLocaleString('ru-RU')} so'm) avtomobil topshirilayotganda bloklanadi va toza holatda qaytarilganda to'liq bekor qilinadi.</div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; margin-top: 24px;">
+        <div style="display: flex; justify-content: space-between; margin-top: 24px; gap: 12px;">
           <button class="btn btn-secondary" id="btn-wizard-prev-3">← Ortga</button>
-          <button class="btn btn-primary" id="btn-submit-booking">✅ Buyurtmani Tasdiqlash</button>
+          <button class="btn btn-primary" id="btn-submit-booking">
+            ${this.wizardData.paymentMethod === 'cash' ? "✅ Buyurtmani Tasdiqlash" : "✅ To'lov qildim va Tasdiqlash"}
+          </button>
         </div>
       </div>
     `;
@@ -712,6 +778,38 @@ const ClientView = {
       };
     });
 
+    // Step 3 Copy Card Number button
+    const copyCardBtn = document.getElementById('btn-copy-card');
+    if (copyCardBtn) {
+      copyCardBtn.onclick = async (e) => {
+        e.preventDefault();
+        try {
+          if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(this.companyCard.rawNumber);
+          } else if (typeof document !== 'undefined') {
+            const tempInput = document.createElement('input');
+            tempInput.value = this.companyCard.rawNumber;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+          }
+          copyCardBtn.innerHTML = '<span>✓ Nusxalandi!</span>';
+          copyCardBtn.classList.add('copied');
+          if (window.App) window.App.showToast("Karta raqami nusxalandi: " + this.companyCard.number, "success");
+          setTimeout(() => {
+            const btn = document.getElementById('btn-copy-card');
+            if (btn) {
+              btn.innerHTML = '<span class="copy-icon">📋</span><span class="copy-label">Nusxa olish</span>';
+              btn.classList.remove('copied');
+            }
+          }, 2500);
+        } catch (err) {
+          if (window.App) window.App.showToast("Karta raqami: " + this.companyCard.number, "info");
+        }
+      };
+    }
+
     // Step 3 -> Step 2
     const prev3 = document.getElementById('btn-wizard-prev-3');
     if (prev3) {
@@ -741,28 +839,109 @@ const ClientView = {
         });
 
         if (result.success) {
+          const smsText = this.generateSmsText(
+            this.wizardData.userName,
+            `${this.selectedCar.make} ${this.selectedCar.model}`,
+            result.totalAmount,
+            result.bookingCode
+          );
+
           const modalBox = document.getElementById('booking-modal-content');
           modalBox.innerHTML = `
-            <div style="text-align: center; padding: 24px 10px;">
-              <div style="font-size: 3.5rem; margin-bottom: 12px;">🎉</div>
-              <h2 style="font-size: 1.6rem; color: var(--accent-emerald); margin-bottom: 8px;">Buyurtma Muvaffaqiyatli Rasmiylashtirildi!</h2>
-              <p style="color: var(--text-secondary); margin-bottom: 18px;">Buyurtma kodingiz: <strong style="color: var(--text-primary); font-size: 1.2rem;">${result.bookingCode}</strong></p>
-              
-              <div style="background: var(--bg-surface); padding: 18px; border-radius: var(--radius-md); text-align: left; margin-bottom: 24px;">
-                <div style="margin-bottom: 6px;"><strong>Avtomobil:</strong> ${this.selectedCar.make} ${this.selectedCar.model}</div>
-                <div style="margin-bottom: 6px;"><strong>Ijara muddati:</strong> ${this.wizardData.startDate} dan ${this.wizardData.endDate} gacha</div>
-                <div style="margin-bottom: 6px;"><strong>Jami summa:</strong> ${(result.totalAmount).toLocaleString()} so'm</div>
-                <div><strong>To'lov usuli:</strong> ${this.wizardData.paymentMethod.toUpperCase()} (To'landi)</div>
+            <div style="text-align: center; padding: 20px 10px;">
+              <div style="font-size: 3.2rem; margin-bottom: 8px;">🎉</div>
+              <h2 style="font-size: 1.55rem; color: #34d399; margin-bottom: 6px;">Buyurtma va To'lov Tasdiqlandi!</h2>
+              <p style="color: #cbd5e1; font-size: 0.95rem; margin-bottom: 18px;">
+                Buyurtma kodingiz: <strong style="color: #ffffff; font-size: 1.25rem;">${result.bookingCode}</strong>
+              </p>
+
+              <!-- Realistic SMS Notification Preview Card -->
+              <div class="sms-notification-card">
+                <div class="sms-header">
+                  <div class="sms-sender">
+                    <span class="sms-badge-icon">💬</span>
+                    <div>
+                      <div class="sms-sender-title">SMS Xabarnoma • RentCar.uz</div>
+                      <div class="sms-sender-sub">Yuboruvchi: +998 71 200-01-01</div>
+                    </div>
+                  </div>
+                  <span class="sms-time-badge">Hozir</span>
+                </div>
+                <div class="sms-body">
+                  "${smsText}"
+                </div>
+                <div class="sms-footer">
+                  <div class="sms-code-display">
+                    <span class="sms-code-label">Tasdiqlash kodi:</span>
+                    <strong class="sms-code-val" id="sms-booking-code-val">${result.bookingCode}</strong>
+                  </div>
+                  <button type="button" class="btn-copy-code" id="btn-copy-booking-code" title="Kodni nusxalash">
+                    📋 Kodni nusxalash
+                  </button>
+                </div>
               </div>
 
-              <button class="btn btn-primary" id="btn-finish-booking">Tushunarli</button>
+              <!-- Booking summary details -->
+              <div class="booking-success-summary" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.12); padding: 16px; border-radius: var(--radius-md); text-align: left; margin: 20px 0 24px; color: #ffffff;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
+                  <span style="color: #94a3b8;">Avtomobil:</span>
+                  <strong style="color: #ffffff;">${this.selectedCar.make} ${this.selectedCar.model} (${this.selectedCar.year})</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
+                  <span style="color: #94a3b8;">Mijoz:</span>
+                  <strong style="color: #ffffff;">${this.wizardData.userName} (${this.wizardData.phone})</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
+                  <span style="color: #94a3b8;">Ijara muddati:</span>
+                  <span style="color: #ffffff;">${this.wizardData.startDate} — ${this.wizardData.endDate}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 8px;">
+                  <span style="color: #94a3b8;">To'langan summa:</span>
+                  <strong style="color: #34d399; font-size: 1.15rem;">${(result.totalAmount).toLocaleString('ru-RU')} so'm</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #94a3b8;">
+                  <span>To'lov usuli:</span>
+                  <span style="color: #38bdf8; font-weight: 600;">${this.wizardData.paymentMethod.toUpperCase()} (Qabul qilindi ✅)</span>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 12px; justify-content: center;">
+                <button class="btn btn-primary" id="btn-finish-booking" style="padding: 10px 32px;">Tushunarli</button>
+              </div>
             </div>
           `;
+
+          const copyCodeBtn = document.getElementById('btn-copy-booking-code');
+          if (copyCodeBtn) {
+            copyCodeBtn.onclick = async () => {
+              try {
+                if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+                  await navigator.clipboard.writeText(result.bookingCode);
+                } else if (typeof document !== 'undefined') {
+                  const tempInput = document.createElement('input');
+                  tempInput.value = result.bookingCode;
+                  document.body.appendChild(tempInput);
+                  tempInput.select();
+                  document.execCommand('copy');
+                  document.body.removeChild(tempInput);
+                }
+                copyCodeBtn.innerText = "✓ Kod nusxalandi!";
+                if (window.App) window.App.showToast("Tasdiqlash kodi nusxalandi: " + result.bookingCode, "success");
+                setTimeout(() => {
+                  const btn = document.getElementById('btn-copy-booking-code');
+                  if (btn) btn.innerText = "📋 Kodni nusxalash";
+                }, 2500);
+              } catch (err) {
+                if (window.App) window.App.showToast("Kodingiz: " + result.bookingCode, "info");
+              }
+            };
+          }
+
           document.getElementById('btn-finish-booking').onclick = () => {
             document.getElementById('booking-modal-overlay').classList.remove('active');
             if (window.App) window.App.navigate('client');
           };
-          if (window.App) window.App.showToast("Buyurtma muvaffaqiyatli saqlandi!", "success");
+          if (window.App) window.App.showToast("To'lov va buyurtma muvaffaqiyatli qabul qilindi!", "success");
         } else {
           submitBtn.disabled = false;
           submitBtn.innerText = "Qayta urinish";
