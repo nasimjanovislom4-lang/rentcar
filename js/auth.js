@@ -10,7 +10,7 @@ const Auth = {
   // RBAC Permission Matrix for Views
   permissions: {
     client: ['client', 'my-bookings'],
-    manager: ['client', 'my-bookings', 'dashboard', 'fleet', 'bookings'],
+    manager: ['client', 'my-bookings', 'dashboard', 'fleet', 'bookings', 'crm'],
     admin: ['client', 'my-bookings', 'dashboard', 'fleet', 'bookings', 'crm', 'reports']
   },
 

@@ -196,30 +196,37 @@ const ExcelHelper = {
   exportCrm() {
     if (typeof DB === 'undefined') return;
     const users = DB.query(`
-      SELECT id, full_name, phone, role, passport_no, license_no, status, created_at
-      FROM users
-      ORDER BY id ASC
+      SELECT u.id, u.full_name, u.username, u.phone, u.role, u.passport_no, u.license_no, u.status, u.created_at,
+             COUNT(b.id) as total_bookings,
+             COALESCE(SUM(b.total_amount), 0) as total_spent
+      FROM users u
+      LEFT JOIN bookings b ON u.id = b.user_id AND b.status != 'cancelled'
+      WHERE u.role = 'client'
+      GROUP BY u.id
+      ORDER BY u.id DESC
     `);
 
     const headers = [
-      "ID", "Mijoz Ism-Sharifi", "Telefon Raqami", "Roli", 
-      "Pasport / ID", "Prava (Guvohnoma)", "Status", "Ro'yxatdan O'tgan Sana"
+      "ID", "Mijoz Ism-Familiyasi", "Login (Username)", "Telefon Raqami", "Ro'yxatdan O'tgan Vaqti",
+      "Pasport / ID", "Haydovchilik Guvohnomasi", "Status", "Buyurtmalar Soni", "Jami Ijara Summasi (UZS)"
     ];
 
     const rows = users.map(u => [
       u.id,
       u.full_name,
+      u.username || 'kiritilmagan',
       u.phone,
-      u.role,
-      u.passport_no || '',
-      u.license_no || '',
-      u.status,
-      u.created_at
+      u.created_at,
+      u.passport_no || 'kiritilmagan',
+      u.license_no || 'kiritilmagan',
+      u.status === 'active' ? 'Faol (Active)' : "Qora Ro'yxatda (Blacklisted)",
+      u.total_bookings,
+      u.total_spent
     ]);
 
     const dateStr = new Date().toISOString().split('T')[0];
     this.exportWorkbook([
-      { sheetName: 'Mijozlar', headers, rows }
+      { sheetName: 'Yangi_Mijozlar', headers, rows }
     ], `rentcar_mijozlar_${dateStr}.xlsx`);
   },
 

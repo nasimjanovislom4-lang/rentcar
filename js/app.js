@@ -419,10 +419,10 @@ const App = {
         <span class="nav-item ${this.currentView === 'bookings' ? 'active' : ''}" data-nav="bookings">
           <i data-lucide="clipboard-list" style="width:15px;height:15px;"></i> Buyurtmalar
         </span>
+        <span class="nav-item ${this.currentView === 'crm' ? 'active' : ''}" data-nav="crm">
+          <i data-lucide="users" style="width:15px;height:15px;"></i> Mijozlar
+        </span>
         ${role === 'admin' ? `
-          <span class="nav-item ${this.currentView === 'crm' ? 'active' : ''}" data-nav="crm">
-            <i data-lucide="users" style="width:15px;height:15px;"></i> Mijozlar (CRM)
-          </span>
           <span class="nav-item ${this.currentView === 'reports' ? 'active' : ''}" data-nav="reports">
             <i data-lucide="wallet" style="width:15px;height:15px;"></i> Moliya & Baza
           </span>
@@ -533,12 +533,12 @@ const App = {
             <span>Buyurtmalar & Aktlar</span>
           </div>
 
-          ${role === 'admin' ? `
-            <div class="sidebar-link ${activeSubView === 'crm' ? 'active' : ''}" data-admin-view="crm">
-              <span class="link-icon"><i data-lucide="users" style="width:17px;height:17px;"></i></span>
-              <span>Mijozlar & Blacklist</span>
-            </div>
+          <div class="sidebar-link ${activeSubView === 'crm' ? 'active' : ''}" data-admin-view="crm">
+            <span class="link-icon"><i data-lucide="users" style="width:17px;height:17px;"></i></span>
+            <span>Mijozlar Bazasi</span>
+          </div>
 
+          ${role === 'admin' ? `
             <div class="sidebar-link ${activeSubView === 'reports' ? 'active' : ''}" data-admin-view="reports">
               <span class="link-icon"><i data-lucide="wallet" style="width:17px;height:17px;"></i></span>
               <span>Moliya & SQLite Baza</span>

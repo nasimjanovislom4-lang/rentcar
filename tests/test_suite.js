@@ -117,8 +117,8 @@ async function testAuthRoleSwitch() {
   assert(Auth.getRole() === 'manager', "Current role should be manager");
   assert(Auth.canAccess('dashboard') === true, "Manager should have access to dashboard");
   assert(Auth.canAccess('fleet') === true, "Manager should have access to fleet");
+  assert(Auth.canAccess('crm') === true, "Manager should have access to crm (new clients database)");
   assert(Auth.canAccess('reports') === false, "Manager must NOT have access to reports/finance");
-  assert(Auth.canAccess('crm') === false, "Manager must NOT have access to crm");
 
   // 3. Client login & RBAC permissions
   const clientRes = Auth.login('client', 'client123');
