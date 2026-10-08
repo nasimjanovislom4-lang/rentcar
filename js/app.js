@@ -162,7 +162,7 @@ const App = {
 
         ${activeTab === 'login' ? `
           <!-- Login Form -->
-          <form id="form-auth-login" onsubmit="return false;">
+          <form id="form-auth-login">
             <div class="form-group">
               <label class="form-label">Login (Foydalanuvchi nomi yoki Telefon) *</label>
               <input type="text" id="auth-login-user" class="form-input" placeholder="admin, manager yoki +998..." required autocomplete="username">
@@ -198,7 +198,7 @@ const App = {
           </div>
         ` : `
           <!-- Register Form -->
-          <form id="form-auth-register" onsubmit="return false;">
+          <form id="form-auth-register">
             <div class="form-group">
               <label class="form-label">To'liq Ism-Familiyangiz *</label>
               <input type="text" id="auth-reg-name" class="form-input" placeholder="Masalan: Bekzod Rahimov" required>
@@ -269,45 +269,96 @@ const App = {
 
       // Handle Login submit
       const loginForm = document.getElementById('form-auth-login');
-      if (loginForm) {
-        loginForm.onsubmit = (e) => {
-          e.preventDefault();
-          const u = document.getElementById('auth-login-user').value.trim();
-          const p = document.getElementById('auth-login-pass').value;
-          this.executeLogin(u, p);
-        };
-      }
+      const loginBtn = document.getElementById('btn-submit-auth-login');
+
+      const handleLogin = (e) => {
+        if (e) e.preventDefault();
+        const userEl = document.getElementById('auth-login-user');
+        const passEl = document.getElementById('auth-login-pass');
+        if (!userEl || !passEl) return;
+        const u = userEl.value.trim();
+        const p = passEl.value;
+
+        if (!u) {
+          this.showToast("Iltimos, login yoki telefon raqamingizni kiriting", "warning");
+          userEl.focus();
+          return;
+        }
+        if (!p) {
+          this.showToast("Iltimos, parolingizni kiriting", "warning");
+          passEl.focus();
+          return;
+        }
+
+        this.executeLogin(u, p);
+      };
+
+      if (loginForm) loginForm.onsubmit = handleLogin;
+      if (loginBtn) loginBtn.onclick = handleLogin;
 
       // Handle Register submit
       const regForm = document.getElementById('form-auth-register');
-      if (regForm) {
-        regForm.onsubmit = (e) => {
-          e.preventDefault();
-          const name = document.getElementById('auth-reg-name').value.trim();
-          const username = document.getElementById('auth-reg-user').value.trim();
-          const phone = document.getElementById('auth-reg-phone').value.trim();
-          const password = document.getElementById('auth-reg-pass').value;
-          const passport = document.getElementById('auth-reg-passport').value.trim();
-          const license = document.getElementById('auth-reg-license').value.trim();
+      const regBtn = document.getElementById('btn-submit-auth-register');
 
-          const result = Auth.register({
-            full_name: name,
-            username,
-            phone,
-            password,
-            passport_no: passport,
-            license_no: license
-          });
+      const handleRegister = (e) => {
+        if (e) e.preventDefault();
+        const nameEl = document.getElementById('auth-reg-name');
+        const userEl = document.getElementById('auth-reg-user');
+        const phoneEl = document.getElementById('auth-reg-phone');
+        const passEl = document.getElementById('auth-reg-pass');
+        const passpEl = document.getElementById('auth-reg-passport');
+        const licEl = document.getElementById('auth-reg-license');
 
-          if (result.success) {
-            this.closeAuthModal();
-            this.navigate('client');
-            this.showToast(`Ro'yxatdan o'tish muvaffaqiyatli! Xush kelibsiz, ${result.user.full_name}`, "success");
-          } else {
-            this.showToast(result.error || "Ro'yxatdan o'tishda xatolik", "error");
-          }
-        };
-      }
+        if (!nameEl || !userEl || !phoneEl || !passEl) return;
+
+        const name = nameEl.value.trim();
+        const username = userEl.value.trim();
+        const phone = phoneEl.value.trim();
+        const password = passEl.value;
+        const passport = passpEl ? passpEl.value.trim() : '';
+        const license = licEl ? licEl.value.trim() : '';
+
+        if (!name) {
+          this.showToast("Iltimos, to'liq ism-familiyangizni kiriting", "warning");
+          nameEl.focus();
+          return;
+        }
+        if (!username) {
+          this.showToast("Iltimos, foydalanuvchi nomini (login) kiriting", "warning");
+          userEl.focus();
+          return;
+        }
+        if (!phone) {
+          this.showToast("Iltimos, telefon raqamingizni kiriting", "warning");
+          phoneEl.focus();
+          return;
+        }
+        if (!password) {
+          this.showToast("Iltimos, parolingizni kiriting", "warning");
+          passEl.focus();
+          return;
+        }
+
+        const result = Auth.register({
+          full_name: name,
+          username,
+          phone,
+          password,
+          passport_no: passport,
+          license_no: license
+        });
+
+        if (result.success) {
+          this.closeAuthModal();
+          this.navigate('client');
+          this.showToast(`Ro'yxatdan o'tish muvaffaqiyatli! Xush kelibsiz, ${result.user.full_name}`, "success");
+        } else {
+          this.showToast(result.error || "Ro'yxatdan o'tishda xatolik", "error");
+        }
+      };
+
+      if (regForm) regForm.onsubmit = handleRegister;
+      if (regBtn) regBtn.onclick = handleRegister;
     };
 
     renderModal();
