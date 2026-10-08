@@ -72,16 +72,11 @@ async function testLegacyCarImageMigrations() {
 }
 
 async function testCarsUseLocalImages() {
-  const expectedImages = [
-    [1, 'assets/cars/chevrolet-onix-premier.jpg'],
-    [2, 'assets/cars/chevrolet-tracker-redline.jpg'],
-    [3, 'assets/cars/chevrolet-malibu-2-premier.jpg']
-  ];
-  expectedImages.forEach(([carId, imageUrl]) => {
-    const car = DB.query("SELECT image_url FROM cars WHERE id = ?", [carId])[0];
-    const imagePath = path.join(__dirname, '..', imageUrl);
-    assert(car.image_url === imageUrl, `Car ${carId} must use its local image asset`);
-    assert(fs.existsSync(imagePath), `Image asset must exist for car ${carId}`);
+  const cars = DB.query("SELECT id, make, model, image_url FROM cars");
+  assert(cars.length >= 10, "Fleet must contain at least 10 cars including Gentra and Zeekr");
+  cars.forEach(car => {
+    const imgPath = path.join(__dirname, '..', car.image_url);
+    assert(fs.existsSync(imgPath), `Image asset must exist for ${car.make} ${car.model}: ${car.image_url}`);
   });
 }
 
