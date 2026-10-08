@@ -68,26 +68,36 @@ const DB = {
       console.warn("Purge Mercedes warning:", e);
     }
 
-    // 2. Ensure Gentra and Zeekr exist in fleet
+    // 2. Ensure Gentra exists in fleet
     try {
-      const gentra = this.query("SELECT id FROM cars WHERE LOWER(model) LIKE '%gentra%'");
+      const gentra = this.query("SELECT id FROM cars WHERE LOWER(model) LIKE '%gentra%' OR LOWER(model) LIKE '%jentro%'");
       if (!gentra || gentra.length === 0) {
         this.dbInstance.run(`
-          INSERT INTO cars (id, make, model, year, category, transmission, fuel_type, seats, daily_rate, deposit_amount, status, mileage, plate_number, image_url, features_json)
-          VALUES (10, 'Chevrolet', 'Gentra Elegant', 2023, 'Ekonom', 'Avtomat', 'Benzin', 5, 300000, 1500000, 'available', 32000, '01G999GG', 'assets/cars/Gentro.jpg', '["Konditsioner", "MagiCar pult", "Gaz/Benzin", "Lyuk"]')
+          INSERT INTO cars (make, model, year, category, transmission, fuel_type, seats, daily_rate, deposit_amount, status, mileage, plate_number, image_url, features_json)
+          VALUES ('Chevrolet', 'Gentra Elegant', 2023, 'Ekonom', 'Avtomat', 'Benzin', 5, 300000, 1500000, 'available', 32000, '01G999GG', 'assets/cars/Gentro.jpg', '["Konditsioner", "MagiCar pult", "Gaz/Benzin", "Lyuk"]')
         `);
         migrated = true;
+      } else {
+        this.dbInstance.run("UPDATE cars SET image_url = 'assets/cars/Gentro.jpg' WHERE LOWER(model) LIKE '%gentra%' OR LOWER(model) LIKE '%jentro%'");
       }
+    } catch (e) {
+      console.warn("Gentra addition warning:", e);
+    }
+
+    // 3. Ensure Zeekr exists in fleet
+    try {
       const zeekr = this.query("SELECT id FROM cars WHERE LOWER(make) LIKE '%zeekr%'");
       if (!zeekr || zeekr.length === 0) {
         this.dbInstance.run(`
-          INSERT INTO cars (id, make, model, year, category, transmission, fuel_type, seats, daily_rate, deposit_amount, status, mileage, plate_number, image_url, features_json)
-          VALUES (11, 'Zeekr', '9X Sport', 2024, 'Premium', 'Avtomat', 'Elektr', 5, 1200000, 5000000, 'available', 6400, '01Z888ZZ', 'assets/cars/zeekr 9X.jpg', '["Elektr yurish 656km", "Yamaha audio", "Pnevmo-podveska", "0-100 3.8s"]')
+          INSERT INTO cars (make, model, year, category, transmission, fuel_type, seats, daily_rate, deposit_amount, status, mileage, plate_number, image_url, features_json)
+          VALUES ('Zeekr', '9X Sport', 2024, 'Premium', 'Avtomat', 'Elektr', 5, 1200000, 5000000, 'available', 6400, '01Z888ZZ', 'assets/cars/zeekr 9X.jpg', '["Elektr yurish 656km", "Yamaha audio", "Pnevmo-podveska", "0-100 3.8s"]')
         `);
         migrated = true;
+      } else {
+        this.dbInstance.run("UPDATE cars SET image_url = 'assets/cars/zeekr 9X.jpg' WHERE LOWER(make) LIKE '%zeekr%'");
       }
     } catch (e) {
-      console.warn("Fleet addition warning:", e);
+      console.warn("Zeekr addition warning:", e);
     }
 
     // 3. Force Yuan Up image and plate update
